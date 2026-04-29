@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: battery-rag-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-battery_rag}
+      POSTGRES_USER: ${POSTGRES_USER:-battery_rag}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-battery_rag_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: battery-rag-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  qdrant:
+    image: qdrant/qdrant
+    container_name: battery-rag-qdrant
+    ports:
+      - "${QDRANT_HTTP_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  postgres_data:
+  qdrant_data:
+
