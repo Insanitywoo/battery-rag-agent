@@ -1,5 +1,9 @@
-## ADDED Requirements
+# backend-shell
 
+## Purpose
+
+Define the baseline backend application shell for Battery-RAG Agent so future backend capabilities can grow on a stable FastAPI structure.
+## Requirements
 ### Requirement: Backend SHALL use FastAPI
 The backend shell SHALL be scaffolded as a FastAPI service so that future API modules can be added within the agreed Python web framework.
 
@@ -22,8 +26,9 @@ The backend shell SHALL define a project structure that can accommodate future c
 - **THEN** those changes SHALL be able to extend the existing backend shell structure rather than replacing it with a different bootstrap pattern
 
 ### Requirement: Backend shell SHALL avoid business capability implementation
-The backend shell MUST NOT implement authentication, document ingestion, RAG retrieval, or Agent execution in this change.
+The backend shell MUST NOT implement document ingestion, RAG retrieval, Agent execution, Skills orchestration, or other out-of-scope business workflows in this change, but it MAY implement user authentication and owner-scoped project workspace APIs introduced by this change.
 
-#### Scenario: Backend scope remains bootstrap-only
-- **WHEN** the backend shell is reviewed for accepted functionality
-- **THEN** the only required functional endpoint introduced by this change SHALL be the basic health check plus any framework-default bootstrap wiring
+#### Scenario: Backend scope is limited to auth and project workspace
+- **WHEN** the backend shell is reviewed for accepted functionality in this change
+- **THEN** the functional expansion beyond health check SHALL be limited to authentication and owner-scoped project workspace APIs, and SHALL exclude document, RAG, Agent, and Skills capabilities
+

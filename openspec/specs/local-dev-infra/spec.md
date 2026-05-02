@@ -1,4 +1,10 @@
-## ADDED Requirements
+# local-dev-infra
+
+## Purpose
+
+Define the shared local development infrastructure needed to run Battery-RAG Agent shells consistently during development.
+
+## Requirements
 
 ### Requirement: Local development SHALL provide shared dependency containers
 The repository SHALL include a Docker Compose configuration for the local development environment that provisions PostgreSQL, Redis, and Qdrant as shared dependency services for future application work.

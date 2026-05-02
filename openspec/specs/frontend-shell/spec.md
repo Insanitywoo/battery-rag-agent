@@ -1,5 +1,9 @@
-## ADDED Requirements
+# frontend-shell
 
+## Purpose
+
+Define the baseline frontend application shell for Battery-RAG Agent so future product interfaces can grow on a stable Next.js structure.
+## Requirements
 ### Requirement: Frontend SHALL use Next.js, React, and Tailwind CSS
 The frontend shell SHALL be scaffolded with Next.js and React, and it SHALL include Tailwind CSS in its baseline setup so that future product UI work can build on the agreed web stack.
 
@@ -15,15 +19,16 @@ The frontend shell SHALL include a publicly reachable landing page placeholder t
 - **THEN** the application SHALL render a landing page placeholder for Battery-RAG Agent
 
 ### Requirement: Frontend SHALL provide a dashboard placeholder route
-The frontend shell SHALL include a dashboard placeholder page so that future authenticated workspace features can be added on top of an existing routed application shape.
+The frontend shell SHALL provide a dashboard route that can evolve from a placeholder into an authenticated personal workspace page, and this change MAY implement the logged-in dashboard experience needed for user auth and project workspace flows.
 
-#### Scenario: Dashboard placeholder route exists
-- **WHEN** a developer navigates to the dashboard route in the frontend shell
-- **THEN** the application SHALL render a dashboard placeholder page distinct from the landing page
+#### Scenario: Dashboard route supports authenticated workspace
+- **WHEN** the frontend is reviewed after this change
+- **THEN** the dashboard route SHALL be allowed to represent an authenticated user workspace rather than a placeholder-only screen
 
 ### Requirement: Frontend shell SHALL avoid premature business workflows
-The frontend shell MUST NOT implement login forms, document workflows, chat experiences, or agent task flows as part of this change.
+The frontend shell MUST NOT implement document workflows, chat experiences, RAG interfaces, Agent task flows, or other out-of-scope product capabilities in this change, but it MAY implement login, registration, dashboard, project list, and create-project flows required for the personal user workspace.
 
-#### Scenario: Placeholder-only frontend scope is preserved
+#### Scenario: Frontend scope is limited to auth and workspace flows
 - **WHEN** the frontend shell is reviewed
-- **THEN** all product-facing pages introduced by this change SHALL remain structural placeholders rather than functional business workflows
+- **THEN** product-facing pages introduced by this change SHALL be limited to authentication and personal project workspace flows, and SHALL exclude document, RAG, Agent, and Skills experiences
+

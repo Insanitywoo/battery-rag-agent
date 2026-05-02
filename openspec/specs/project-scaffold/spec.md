@@ -1,4 +1,10 @@
-## ADDED Requirements
+# project-scaffold
+
+## Purpose
+
+Define the repository scaffold for Battery-RAG Agent so frontend, backend, infrastructure, and documentation can evolve without restructuring the project root.
+
+## Requirements
 
 ### Requirement: Repository SHALL use a monorepo scaffold
 The repository SHALL provide a monorepo structure that separates frontend application code, backend service code, and root-level project infrastructure files so that future changes can extend each area without restructuring the repository.
