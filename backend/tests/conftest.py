@@ -16,6 +16,7 @@ if str(BACKEND_DIR) not in sys.path:
 @pytest.fixture
 def app(tmp_path: Path):
     db_path = tmp_path / "test.db"
+    storage_root = tmp_path / "storage"
 
     os.environ["APP_ENV"] = "development"
     os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
@@ -23,6 +24,8 @@ def app(tmp_path: Path):
     os.environ["COOKIE_SECURE"] = "false"
     os.environ["COOKIE_SAMESITE"] = "lax"
     os.environ["BACKEND_CORS_ORIGINS"] = "http://localhost:3000"
+    os.environ["STORAGE_ROOT"] = str(storage_root)
+    os.environ["MAX_UPLOAD_SIZE_BYTES"] = "2048"
 
     from app.core.config import clear_settings_cache
     from app.db.session import clear_db_cache, init_db

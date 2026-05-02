@@ -1,1 +1,1 @@
-from app.api.routes import auth, projects, system
+from app.api.routes import auth, documents, projects, system

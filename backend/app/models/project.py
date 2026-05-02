@@ -24,3 +24,4 @@ class Project(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     owner = relationship("User", back_populates="projects")
+    documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")

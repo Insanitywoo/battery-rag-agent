@@ -2,23 +2,57 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 import { LogoutButton } from "../../../components/logout-button";
 import { useAuthSession } from "../../../hooks/use-auth-session";
 import { apiFetch } from "../../../lib/api";
-import type { ApiMessage, Project } from "../../../lib/types";
+import type { ApiMessage, Document, Project } from "../../../lib/types";
+
+const ACCEPTED_FILE_TYPES = ".pdf,.txt,.md,.csv";
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
 
 export default function ProjectDetailPage() {
   const params = useParams<{ projectId: string }>();
   const { user, isLoading, error, logout } = useAuthSession({ redirectToLogin: true });
   const [project, setProject] = useState<Project | null>(null);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [isProjectLoading, setIsProjectLoading] = useState(true);
+  const [isDocumentsLoading, setIsDocumentsLoading] = useState(true);
   const [projectError, setProjectError] = useState<string | null>(null);
+  const [documentError, setDocumentError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+  const projectId = params.projectId;
+
+  const documentSummary = useMemo(() => {
+    if (documents.length === 0) {
+      return "No files uploaded yet.";
+    }
+    return `${documents.length} file${documents.length === 1 ? "" : "s"} in this project`;
+  }, [documents]);
 
   useEffect(() => {
     async function loadProject() {
-      if (!user || !params.projectId) {
+      if (!user || !projectId) {
         return;
       }
 
@@ -26,7 +60,7 @@ export default function ProjectDetailPage() {
       setProjectError(null);
 
       try {
-        const response = await apiFetch(`/api/projects/${params.projectId}`, {
+        const response = await apiFetch(`/api/projects/${projectId}`, {
           method: "GET",
           cache: "no-store",
         });
@@ -48,7 +82,119 @@ export default function ProjectDetailPage() {
     }
 
     void loadProject();
-  }, [params.projectId, user]);
+  }, [projectId, user]);
+
+  useEffect(() => {
+    async function loadDocuments() {
+      if (!user || !projectId) {
+        return;
+      }
+
+      setIsDocumentsLoading(true);
+      setDocumentError(null);
+
+      try {
+        const response = await apiFetch(`/api/projects/${projectId}/documents`, {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as ApiMessage | null;
+          throw new Error(payload?.message || payload?.detail || "Failed to load project documents.");
+        }
+
+        const payload = (await response.json()) as Document[];
+        setDocuments(payload);
+      } catch (requestError) {
+        setDocumentError(
+          requestError instanceof Error ? requestError.message : "Failed to load project documents.",
+        );
+      } finally {
+        setIsDocumentsLoading(false);
+      }
+    }
+
+    void loadDocuments();
+  }, [projectId, user]);
+
+  function handleFileSelection(event: ChangeEvent<HTMLInputElement>) {
+    setUploadMessage(null);
+    setDocumentError(null);
+    setSelectedFile(event.target.files?.[0] ?? null);
+  }
+
+  async function handleUpload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!projectId || !selectedFile) {
+      setUploadMessage("Choose a PDF, TXT, MD, or CSV file before uploading.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadMessage(null);
+    setDocumentError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("upload", selectedFile);
+
+      const response = await apiFetch(`/api/projects/${projectId}/documents`, {
+        method: "POST",
+        body: formData,
+        skipJsonContentType: true,
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as ApiMessage | null;
+        throw new Error(payload?.message || payload?.detail || "Failed to upload file.");
+      }
+
+      const payload = (await response.json()) as Document;
+      setDocuments((current) => [payload, ...current]);
+      setSelectedFile(null);
+      setUploadMessage(`Uploaded ${payload.original_filename}.`);
+      const form = event.currentTarget;
+      form.reset();
+    } catch (requestError) {
+      setUploadMessage(requestError instanceof Error ? requestError.message : "Failed to upload file.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  async function handleDelete(document: Document) {
+    if (!projectId) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete ${document.original_filename}? This removes the stored file permanently.`);
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingDocumentId(document.id);
+    setDocumentError(null);
+    setUploadMessage(null);
+
+    try {
+      const response = await apiFetch(`/api/projects/${projectId}/documents/${document.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as ApiMessage | null;
+        throw new Error(payload?.message || payload?.detail || "Failed to delete file.");
+      }
+
+      setDocuments((current) => current.filter((item) => item.id !== document.id));
+    } catch (requestError) {
+      setDocumentError(requestError instanceof Error ? requestError.message : "Failed to delete file.");
+    } finally {
+      setDeletingDocumentId(null);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -76,15 +222,15 @@ export default function ProjectDetailPage() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cobalt">
-              Project Detail Placeholder
+              Project Document Workspace
             </p>
             <h1 className="mt-4 text-4xl font-semibold text-ink">
               {project?.name || "Project workspace"}
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-              This route only reserves the project-level entry point for a future
-              change. It intentionally excludes document upload, knowledge base,
-              RAG, Agent, and Skills workflows.
+              Upload and manage raw project files here. This page is intentionally
+              limited to local file storage and metadata management. It does not
+              perform parsing, chunking, embeddings, RAG, Agent, or Skills work.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -108,29 +254,153 @@ export default function ProjectDetailPage() {
           Loading project metadata...
         </section>
       ) : project ? (
+        <div className="grid gap-8 xl:grid-cols-[0.92fr_1.08fr]">
+          <section className="rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-xl shadow-slate-200/40">
+            <h2 className="text-xl font-semibold text-ink">Project metadata</h2>
+            <dl className="mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <dt className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Project ID
+                </dt>
+                <dd className="mt-2 text-sm text-slate-700">{project.id}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Owner ID
+                </dt>
+                <dd className="mt-2 text-sm text-slate-700">{project.owner_id}</dd>
+              </div>
+              <div className="md:col-span-2">
+                <dt className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Description
+                </dt>
+                <dd className="mt-2 text-sm leading-7 text-slate-700">
+                  {project.description || "No description provided yet."}
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-xl shadow-slate-200/40">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-ink">Upload files</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  Allowed types: PDF, TXT, MD, and CSV. The backend validates both
+                  extension and MIME type before saving into local storage.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-mist px-4 py-3 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
+                {documentSummary}
+              </div>
+            </div>
+
+            <form className="mt-6 space-y-5" onSubmit={handleUpload}>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="document-upload">
+                  Choose file
+                </label>
+                <input
+                  id="document-upload"
+                  type="file"
+                  accept={ACCEPTED_FILE_TYPES}
+                  onChange={handleFileSelection}
+                  className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-slate-800"
+                />
+                <p className="mt-3 text-xs leading-6 text-slate-500">
+                  Files stay in local storage only for this change. No parsing or vectorization is performed.
+                </p>
+              </div>
+              {uploadMessage ? (
+                <div className="rounded-2xl border border-slate-200 bg-mist px-4 py-3 text-sm text-slate-700">
+                  {uploadMessage}
+                </div>
+              ) : null}
+              <button
+                type="submit"
+                disabled={isUploading}
+                className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {isUploading ? "Uploading..." : "Upload file"}
+              </button>
+            </form>
+          </section>
+        </div>
+      ) : null}
+
+      {project ? (
         <section className="rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-xl shadow-slate-200/40">
-          <dl className="grid gap-6 md:grid-cols-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <dt className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Project ID
-              </dt>
-              <dd className="mt-2 text-sm text-slate-700">{project.id}</dd>
+              <h2 className="text-xl font-semibold text-ink">Stored files</h2>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                This list is scoped to the authenticated owner and the current project only.
+              </p>
             </div>
-            <div>
-              <dt className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Owner ID
-              </dt>
-              <dd className="mt-2 text-sm text-slate-700">{project.owner_id}</dd>
+            <div className="rounded-2xl border border-slate-200 bg-mist px-4 py-3 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
+              {documentSummary}
             </div>
-            <div className="md:col-span-2">
-              <dt className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Description
-              </dt>
-              <dd className="mt-2 text-sm leading-7 text-slate-700">
-                {project.description || "No description provided yet."}
-              </dd>
+          </div>
+
+          {documentError ? (
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {documentError}
             </div>
-          </dl>
+          ) : null}
+
+          {isDocumentsLoading ? (
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-mist px-4 py-5 text-sm text-slate-600">
+              Loading files...
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-mist px-4 py-5 text-sm text-slate-600">
+              No files yet. Upload a project file to create the local storage record.
+            </div>
+          ) : (
+            <div className="mt-6 space-y-4">
+              {documents.map((document) => (
+                <article key={document.id} className="rounded-3xl border border-slate-200 bg-mist p-5">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-lg font-semibold text-ink">
+                        {document.original_filename}
+                      </h3>
+                      <div className="mt-4 grid gap-4 text-sm text-slate-600 md:grid-cols-2 xl:grid-cols-5">
+                        <div>
+                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Type</p>
+                          <p className="mt-1">{document.file_type.toUpperCase()}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Size</p>
+                          <p className="mt-1">{formatBytes(document.file_size)}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Status</p>
+                          <p className="mt-1 capitalize">{document.status}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Uploaded</p>
+                          <p className="mt-1">{formatDate(document.created_at)}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">MIME</p>
+                          <p className="mt-1 break-all">{document.mime_type}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(document)}
+                      disabled={deletingDocumentId === document.id}
+                      className="rounded-full border border-red-200 bg-white px-5 py-2.5 text-sm font-medium text-red-700 transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                    >
+                      {deletingDocumentId === document.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       ) : null}
     </div>

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.security import decode_access_token
 from app.db.session import get_db
+from app.models.project import Project
 from app.models.user import User
 
 
@@ -35,3 +36,10 @@ def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication user not found.")
 
     return user
+
+
+def get_owned_project(db: Session, owner_id: str, project_id: str) -> Project:
+    project = db.scalar(select(Project).where(Project.id == project_id, Project.owner_id == owner_id))
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
+    return project

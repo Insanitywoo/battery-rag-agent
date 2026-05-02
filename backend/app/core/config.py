@@ -31,6 +31,11 @@ def _get_cors_origins() -> tuple[str, ...]:
     return tuple(origin.strip() for origin in raw.split(",") if origin.strip())
 
 
+def _get_csv(name: str, default: str) -> tuple[str, ...]:
+    raw = os.getenv(name, default)
+    return tuple(item.strip().lower() for item in raw.split(",") if item.strip())
+
+
 def _default_database_url() -> str:
     if explicit := os.getenv("DATABASE_URL"):
         return explicit
@@ -58,6 +63,10 @@ class Settings:
     cookie_name: str
     cookie_secure: bool
     cookie_samesite: str
+    storage_root: Path
+    max_upload_size_bytes: int
+    allowed_upload_extensions: tuple[str, ...]
+    allowed_upload_mime_types: tuple[str, ...]
 
     @property
     def is_production(self) -> bool:
@@ -84,6 +93,13 @@ def get_settings() -> Settings:
         cookie_name=os.getenv("COOKIE_NAME", "access_token"),
         cookie_secure=_get_bool("COOKIE_SECURE", False),
         cookie_samesite=os.getenv("COOKIE_SAMESITE", "lax"),
+        storage_root=(ROOT_DIR / os.getenv("STORAGE_ROOT", "storage")).resolve(),
+        max_upload_size_bytes=_get_int("MAX_UPLOAD_SIZE_BYTES", 10 * 1024 * 1024),
+        allowed_upload_extensions=_get_csv("ALLOWED_UPLOAD_EXTENSIONS", ".pdf,.txt,.md,.csv"),
+        allowed_upload_mime_types=_get_csv(
+            "ALLOWED_UPLOAD_MIME_TYPES",
+            "application/pdf,text/plain,text/markdown,text/csv,application/csv",
+        ),
     )
 
 

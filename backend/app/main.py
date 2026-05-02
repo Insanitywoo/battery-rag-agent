@@ -5,14 +5,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, projects, system
+from app.api.routes import auth, documents, projects, system
 from app.core.config import get_settings
 from app.db.session import init_db
+from app.services.storage import ensure_storage_root
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    ensure_storage_root()
     yield
 
 
@@ -34,6 +36,7 @@ def create_application() -> FastAPI:
     )
     app.include_router(auth.router, prefix="/api")
     app.include_router(projects.router, prefix="/api")
+    app.include_router(documents.router, prefix="/api")
     app.include_router(system.router, prefix="/api")
     return app
 
