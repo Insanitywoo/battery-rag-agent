@@ -44,11 +44,11 @@ The frontend SHALL provide a project workspace that includes a project list view
 - **THEN** the frontend SHALL render a form for creating a new project
 
 ### Requirement: Frontend MAY provide only a reserved project-detail entry point in this change
-The frontend MAY provide a project-detail entry from the project list and, if needed, a project detail placeholder page, but that entry point MUST remain a structural reserve for a later change and MUST NOT implement document upload, knowledge base, RAG, Agent, or Skills workflows.
+The frontend SHALL provide a functional project-detail route for the authenticated owner that includes file upload, file list, and file delete interactions for that project, but it MUST remain limited to document-management scope and MUST NOT implement document parsing, knowledge base, RAG, Agent, or Skills workflows.
 
-#### Scenario: Project-detail entry remains placeholder-only
-- **WHEN** a user enters the project-detail route or placeholder from the project list
-- **THEN** the frontend SHALL limit that experience to placeholder or metadata-level workspace structure and SHALL NOT expose downstream research workflows
+#### Scenario: Project-detail route becomes a minimal document workspace
+- **WHEN** an authenticated owner enters the project-detail route from the project list
+- **THEN** the frontend SHALL render the project-level document workspace with upload and list/delete controls, and SHALL exclude downstream research workflows
 
 ### Requirement: Frontend SHALL not embed backend secrets or sensitive service keys
 The frontend MUST NOT store backend JWT secrets, provider API keys, or other server-side sensitive keys in client code, browser-exposed configuration, or frontend environment variables.
