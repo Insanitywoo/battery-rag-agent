@@ -2,12 +2,15 @@
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+frontend/tsconfig.tsbuildinfo
 
 # Python / backend
 backend/.venv/
 backend/__pycache__/
 backend/.pytest_cache/
+backend/.pytest_tmp/
 backend/.mypy_cache/
+backend/.startup-check.*
 backend/**/*.pyc
 
 # Environment
@@ -20,4 +23,3 @@ backend/.env
 Thumbs.db
 .idea/
 .vscode/
-
