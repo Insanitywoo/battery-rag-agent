@@ -443,6 +443,12 @@ export default function ProjectDetailPage() {
               >
                 Open project chat
               </Link>
+              <Link
+                href={`/projects/${project.id}/agent`}
+                className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                Open project agent
+              </Link>
             </div>
 
             <p className="mt-4 text-xs leading-6 text-slate-500">
@@ -512,6 +518,10 @@ export default function ProjectDetailPage() {
               </p>
               <p>
                 The frontend never stores the model key or token in browser storage.
+              </p>
+              <p>
+                The Agent workspace runs one bounded research task at a time and reuses the same
+                owner-scoped retrieval and evidence rules as project chat.
               </p>
             </div>
           </article>

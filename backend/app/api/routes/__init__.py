@@ -1,1 +1,1 @@
-from app.api.routes import auth, documents, projects, system
+from app.api.routes import agent, auth, chat, documents, knowledge_base, projects, system

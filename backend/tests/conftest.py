@@ -35,6 +35,10 @@ def app(tmp_path: Path):
     os.environ["RAG_TOP_K"] = "4"
     os.environ["RAG_MIN_SIMILARITY"] = "0.15"
     os.environ["CHAT_HISTORY_LIMIT"] = "6"
+    os.environ["AGENT_ENABLE_LLM_ROUTING"] = "false"
+    os.environ["AGENT_MIN_PROMPT_CHARACTERS"] = "18"
+    os.environ["AGENT_MAX_CLAIMS"] = "6"
+    os.environ["AGENT_MAX_COMPARISON_DOCUMENTS"] = "3"
 
     from app.core.config import clear_settings_cache
     from app.db.session import clear_db_cache, init_db

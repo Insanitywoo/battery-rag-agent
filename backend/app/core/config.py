@@ -81,6 +81,10 @@ class Settings:
     rag_top_k: int
     rag_min_similarity: float
     chat_history_limit: int
+    agent_enable_llm_routing: bool
+    agent_min_prompt_characters: int
+    agent_max_claims: int
+    agent_max_comparison_documents: int
 
     @property
     def is_production(self) -> bool:
@@ -128,6 +132,10 @@ def get_settings() -> Settings:
         rag_top_k=max(1, _get_int("RAG_TOP_K", 4)),
         rag_min_similarity=float(os.getenv("RAG_MIN_SIMILARITY", "0.15")),
         chat_history_limit=max(1, _get_int("CHAT_HISTORY_LIMIT", 6)),
+        agent_enable_llm_routing=_get_bool("AGENT_ENABLE_LLM_ROUTING", False),
+        agent_min_prompt_characters=max(8, _get_int("AGENT_MIN_PROMPT_CHARACTERS", 18)),
+        agent_max_claims=max(1, _get_int("AGENT_MAX_CLAIMS", 6)),
+        agent_max_comparison_documents=max(2, _get_int("AGENT_MAX_COMPARISON_DOCUMENTS", 3)),
     )
 
 

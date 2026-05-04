@@ -91,3 +91,44 @@ export type ApiMessage = {
   message?: string;
   detail?: string;
 };
+
+export type AgentTaskType =
+  | "research_qa"
+  | "paper_summary"
+  | "multi_paper_compare"
+  | "literature_review"
+  | "writing_outline"
+  | "evidence_check";
+
+export type AgentResultSection = {
+  title: string;
+  content: string;
+};
+
+export type AgentResultPayload = {
+  routed_task_type: AgentTaskType;
+  route_confidence: number;
+  route_reason: string;
+  answer: string | null;
+  result: string | null;
+  sections: AgentResultSection[];
+  document_scope: string[];
+  sources: SourceReference[];
+  warnings: string[];
+  clarification: string | null;
+  supported_claims: string[];
+  unsupported_claims: string[];
+};
+
+export type AgentTask = {
+  id: string;
+  user_id: string;
+  project_id: string;
+  task_type: AgentTaskType;
+  status: "queued" | "running" | "completed" | "failed" | "needs_clarification";
+  user_input: string;
+  result_json: AgentResultPayload | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+};

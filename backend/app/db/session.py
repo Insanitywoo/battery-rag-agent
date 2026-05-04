@@ -40,7 +40,7 @@ def get_db() -> Session:
 
 
 def init_db() -> None:
-    from app.models import chat_message, chat_session, document, document_chunk, project, user  # noqa: F401
+    from app.models import agent_task, chat_message, chat_session, document, document_chunk, project, user  # noqa: F401
 
     Base.metadata.create_all(bind=get_engine())
 

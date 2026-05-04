@@ -1,3 +1,4 @@
+from app.schemas.agent import AgentResultPayload, AgentRunRequest, AgentTaskResponse
 from app.schemas.auth import AuthResponse, MessageResponse, UserLoginRequest, UserRegistrationRequest, UserResponse
 from app.schemas.chat import (
     ChatMessageResponse,
@@ -17,6 +18,9 @@ from app.schemas.project import (
 )
 
 __all__ = [
+    "AgentResultPayload",
+    "AgentRunRequest",
+    "AgentTaskResponse",
     "AuthResponse",
     "ChatMessageResponse",
     "ChatQuestionRequest",

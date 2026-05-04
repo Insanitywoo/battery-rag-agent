@@ -28,3 +28,4 @@ class User(Base):
     document_chunks = relationship("DocumentChunk", back_populates="user", cascade="all, delete-orphan")
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
     chat_messages = relationship("ChatMessage", back_populates="user", cascade="all, delete-orphan")
+    agent_tasks = relationship("AgentTask", back_populates="user", cascade="all, delete-orphan")

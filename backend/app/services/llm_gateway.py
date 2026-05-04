@@ -54,6 +54,19 @@ class LLMGateway:
             question=question,
         )
 
+    def complete_text(
+        self,
+        *,
+        system_instruction: str,
+        user_prompt: str,
+    ) -> str:
+        if self.settings.llm_provider == "mock":
+            return self._mock_completion(user_prompt)
+        return self._remote_text_completion(
+            system_instruction=system_instruction,
+            user_prompt=user_prompt,
+        )
+
     def _mock_embedding(self, text: str) -> list[float]:
         tokens = re.findall(r"[a-z0-9]+", text.lower())
         vector = [0.0] * 32
@@ -91,6 +104,20 @@ class LLMGateway:
             answer_parts.append("Relevant evidence:")
             answer_parts.extend(snippets)
         return "\n".join(answer_parts)
+
+    def _mock_completion(self, user_prompt: str) -> str:
+        normalized = user_prompt.lower()
+        if "compare" in normalized or "对比" in normalized or "比较" in normalized:
+            return "multi_paper_compare"
+        if "summary" in normalized or "summarize" in normalized or "总结" in normalized:
+            return "paper_summary"
+        if "review" in normalized or "综述" in normalized:
+            return "literature_review"
+        if "outline" in normalized or "大纲" in normalized or "提纲" in normalized:
+            return "writing_outline"
+        if "verify" in normalized or "evidence" in normalized or "核查" in normalized:
+            return "evidence_check"
+        return "research_qa"
 
     def _remote_embeddings(self, texts: list[str]) -> list[list[float]]:
         if not self.settings.llm_api_base_url or not self.settings.llm_api_key:
@@ -173,6 +200,42 @@ class LLMGateway:
                     "stream": False,
                 },
                 timeout=90.0,
+            )
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise LLMGatewayError("LLM chat generation failed.") from exc
+
+        payload = response.json()
+        try:
+            return str(payload["choices"][0]["message"]["content"]).strip()
+        except (KeyError, IndexError, TypeError) as exc:
+            raise LLMGatewayError("LLM chat provider response was invalid.") from exc
+
+    def _remote_text_completion(
+        self,
+        *,
+        system_instruction: str,
+        user_prompt: str,
+    ) -> str:
+        if not self.settings.llm_api_base_url or not self.settings.llm_api_key:
+            raise LLMGatewayError("LLM chat provider is not configured.")
+
+        try:
+            response = httpx.post(
+                f"{self.settings.llm_api_base_url.rstrip('/')}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.settings.llm_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": self.settings.llm_chat_model,
+                    "messages": [
+                        {"role": "system", "content": system_instruction},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "stream": False,
+                },
+                timeout=60.0,
             )
             response.raise_for_status()
         except httpx.HTTPError as exc:
