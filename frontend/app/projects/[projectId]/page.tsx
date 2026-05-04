@@ -37,18 +37,51 @@ export default function ProjectDetailPage() {
   const [isDocumentsLoading, setIsDocumentsLoading] = useState(true);
   const [projectError, setProjectError] = useState<string | null>(null);
   const [documentError, setDocumentError] = useState<string | null>(null);
+  const [documentNotice, setDocumentNotice] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+  const [processingDocumentId, setProcessingDocumentId] = useState<string | null>(null);
   const projectId = params.projectId;
 
   const documentSummary = useMemo(() => {
     if (documents.length === 0) {
       return "No files uploaded yet.";
     }
-    return `${documents.length} file${documents.length === 1 ? "" : "s"} in this project`;
+    const chunkTotal = documents.reduce((total, document) => total + document.chunk_count, 0);
+    return `${documents.length} file${documents.length === 1 ? "" : "s"} / ${chunkTotal} chunk${chunkTotal === 1 ? "" : "s"}`;
   }, [documents]);
+
+  async function loadDocuments() {
+    if (!user || !projectId) {
+      return;
+    }
+
+    setIsDocumentsLoading(true);
+    setDocumentError(null);
+
+    try {
+      const response = await apiFetch(`/api/projects/${projectId}/documents`, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as ApiMessage | null;
+        throw new Error(payload?.message || payload?.detail || "Failed to load project documents.");
+      }
+
+      const payload = (await response.json()) as Document[];
+      setDocuments(payload);
+    } catch (requestError) {
+      setDocumentError(
+        requestError instanceof Error ? requestError.message : "Failed to load project documents.",
+      );
+    } finally {
+      setIsDocumentsLoading(false);
+    }
+  }
 
   useEffect(() => {
     async function loadProject() {
@@ -85,41 +118,12 @@ export default function ProjectDetailPage() {
   }, [projectId, user]);
 
   useEffect(() => {
-    async function loadDocuments() {
-      if (!user || !projectId) {
-        return;
-      }
-
-      setIsDocumentsLoading(true);
-      setDocumentError(null);
-
-      try {
-        const response = await apiFetch(`/api/projects/${projectId}/documents`, {
-          method: "GET",
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as ApiMessage | null;
-          throw new Error(payload?.message || payload?.detail || "Failed to load project documents.");
-        }
-
-        const payload = (await response.json()) as Document[];
-        setDocuments(payload);
-      } catch (requestError) {
-        setDocumentError(
-          requestError instanceof Error ? requestError.message : "Failed to load project documents.",
-        );
-      } finally {
-        setIsDocumentsLoading(false);
-      }
-    }
-
     void loadDocuments();
   }, [projectId, user]);
 
   function handleFileSelection(event: ChangeEvent<HTMLInputElement>) {
     setUploadMessage(null);
+    setDocumentNotice(null);
     setDocumentError(null);
     setSelectedFile(event.target.files?.[0] ?? null);
   }
@@ -134,6 +138,7 @@ export default function ProjectDetailPage() {
 
     setIsUploading(true);
     setUploadMessage(null);
+    setDocumentNotice(null);
     setDocumentError(null);
 
     try {
@@ -176,6 +181,7 @@ export default function ProjectDetailPage() {
 
     setDeletingDocumentId(document.id);
     setDocumentError(null);
+    setDocumentNotice(null);
     setUploadMessage(null);
 
     try {
@@ -189,10 +195,50 @@ export default function ProjectDetailPage() {
       }
 
       setDocuments((current) => current.filter((item) => item.id !== document.id));
+      setDocumentNotice(`${document.original_filename} was deleted.`);
     } catch (requestError) {
       setDocumentError(requestError instanceof Error ? requestError.message : "Failed to delete file.");
     } finally {
       setDeletingDocumentId(null);
+    }
+  }
+
+  async function handleProcess(document: Document) {
+    if (!projectId) {
+      return;
+    }
+
+    setProcessingDocumentId(document.id);
+    setDocumentError(null);
+    setDocumentNotice(null);
+    setUploadMessage(null);
+
+    try {
+      const response = await apiFetch(`/api/projects/${projectId}/documents/${document.id}/process`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as ApiMessage | null;
+        throw new Error(payload?.message || payload?.detail || "Failed to process document.");
+      }
+
+      const payload = (await response.json()) as Document;
+      await loadDocuments();
+
+      if (payload.status === "failed") {
+        setDocumentError(payload.error_message || "Document processing failed.");
+      } else {
+        const actionLabel = document.chunk_count > 0 ? "Reprocessed" : "Processed";
+        setDocumentNotice(`${actionLabel} ${payload.original_filename}.`);
+      }
+    } catch (requestError) {
+      setDocumentError(
+        requestError instanceof Error ? requestError.message : "Failed to process document.",
+      );
+    } finally {
+      setProcessingDocumentId(null);
     }
   }
 
@@ -229,8 +275,8 @@ export default function ProjectDetailPage() {
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
               Upload and manage raw project files here. This page is intentionally
-              limited to local file storage and metadata management. It does not
-              perform parsing, chunking, embeddings, RAG, Agent, or Skills work.
+              limited to local file storage plus bounded document ingestion. It does
+              not implement embeddings, vectors, RAG, Agent, OCR, or Skills work.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -347,6 +393,11 @@ export default function ProjectDetailPage() {
               {documentError}
             </div>
           ) : null}
+          {documentNotice ? (
+            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {documentNotice}
+            </div>
+          ) : null}
 
           {isDocumentsLoading ? (
             <div className="mt-6 rounded-2xl border border-slate-200 bg-mist px-4 py-5 text-sm text-slate-600">
@@ -374,20 +425,42 @@ export default function ProjectDetailPage() {
                           <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Size</p>
                           <p className="mt-1">{formatBytes(document.file_size)}</p>
                         </div>
-                        <div>
-                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Status</p>
-                          <p className="mt-1 capitalize">{document.status}</p>
-                        </div>
-                        <div>
-                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Uploaded</p>
-                          <p className="mt-1">{formatDate(document.created_at)}</p>
-                        </div>
-                        <div>
-                          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">MIME</p>
-                          <p className="mt-1 break-all">{document.mime_type}</p>
-                        </div>
+                      <div>
+                        <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Status</p>
+                        <p className="mt-1 capitalize">{document.status}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Chunks</p>
+                        <p className="mt-1">{document.chunk_count}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">Uploaded</p>
+                        <p className="mt-1">{formatDate(document.created_at)}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">MIME</p>
+                        <p className="mt-1 break-all">{document.mime_type}</p>
                       </div>
                     </div>
+                    {document.error_message ? (
+                      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        {document.error_message}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void handleProcess(document)}
+                      disabled={processingDocumentId === document.id}
+                      className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                    >
+                      {processingDocumentId === document.id
+                        ? "Processing..."
+                        : document.chunk_count > 0
+                          ? "Reprocess document"
+                          : "Process document"}
+                    </button>
                     <button
                       type="button"
                       onClick={() => void handleDelete(document)}
@@ -397,8 +470,9 @@ export default function ProjectDetailPage() {
                       {deletingDocumentId === document.id ? "Deleting..." : "Delete"}
                     </button>
                   </div>
-                </article>
-              ))}
+                </div>
+              </article>
+            ))}
             </div>
           )}
         </section>

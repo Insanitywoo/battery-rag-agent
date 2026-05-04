@@ -25,6 +25,9 @@ export type Document = {
   file_size: number;
   storage_path: string;
   status: "uploaded" | "processing" | "processed" | "failed";
+  error_message: string | null;
+  processed_at: string | null;
+  chunk_count: number;
   created_at: string;
   updated_at: string;
 };

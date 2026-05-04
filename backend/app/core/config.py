@@ -67,6 +67,9 @@ class Settings:
     max_upload_size_bytes: int
     allowed_upload_extensions: tuple[str, ...]
     allowed_upload_mime_types: tuple[str, ...]
+    chunk_size: int
+    chunk_overlap: int
+    csv_preview_char_limit: int
 
     @property
     def is_production(self) -> bool:
@@ -100,6 +103,9 @@ def get_settings() -> Settings:
             "ALLOWED_UPLOAD_MIME_TYPES",
             "application/pdf,text/plain,text/markdown,text/csv,application/csv",
         ),
+        chunk_size=_get_int("CHUNK_SIZE", 1000),
+        chunk_overlap=_get_int("CHUNK_OVERLAP", 150),
+        csv_preview_char_limit=_get_int("CSV_PREVIEW_CHAR_LIMIT", 5000),
     )
 
 

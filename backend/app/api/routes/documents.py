@@ -10,6 +10,7 @@ from app.models.document import Document, DocumentStatus
 from app.models.user import User
 from app.schemas.auth import MessageResponse
 from app.schemas.document import DocumentResponse
+from app.services.ingestion import process_document_ingestion
 from app.services.storage import delete_stored_file, save_upload_file
 
 router = APIRouter(prefix="/projects/{project_id}/documents", tags=["documents"])
@@ -98,3 +99,15 @@ def delete_document(
     db.delete(document)
     db.commit()
     return MessageResponse(message="Document deleted.")
+
+
+@router.post("/{document_id}/process", response_model=DocumentResponse)
+def process_document(
+    project_id: str,
+    document_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Document:
+    get_owned_project(db, current_user.id, project_id)
+    document = _get_owned_document(db, user_id=current_user.id, project_id=project_id, document_id=document_id)
+    return process_document_ingestion(db, document)

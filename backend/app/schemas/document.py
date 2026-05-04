@@ -22,5 +22,8 @@ class DocumentResponse(BaseModel):
     file_size: int
     storage_path: str
     status: DocumentStatusValue
+    error_message: str | None
+    processed_at: datetime | None
+    chunk_count: int
     created_at: datetime
     updated_at: datetime

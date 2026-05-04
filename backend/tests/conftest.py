@@ -26,6 +26,9 @@ def app(tmp_path: Path):
     os.environ["BACKEND_CORS_ORIGINS"] = "http://localhost:3000"
     os.environ["STORAGE_ROOT"] = str(storage_root)
     os.environ["MAX_UPLOAD_SIZE_BYTES"] = "2048"
+    os.environ["CHUNK_SIZE"] = "40"
+    os.environ["CHUNK_OVERLAP"] = "10"
+    os.environ["CSV_PREVIEW_CHAR_LIMIT"] = "120"
 
     from app.core.config import clear_settings_cache
     from app.db.session import clear_db_cache, init_db

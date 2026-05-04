@@ -2,7 +2,7 @@
 
 Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, BMS, control engineering, and AI research workflows.
 
-This repository currently contains the project bootstrap plus the `change-002` auth and personal workspace foundation, and an in-progress `change-003` implementation for project-level local document storage. It provides a monorepo scaffold, frontend and backend shells, local development infrastructure, Cookie-based authentication, owner-scoped project workspace APIs, and local file storage foundations. It does not implement document parsing, embeddings, RAG, Agent workflows, or cloud object storage.
+This repository currently contains the project bootstrap plus the `change-002` auth foundation, `change-003` document storage foundation, and an in-progress `change-004` ingestion pipeline for parsing and chunk persistence. It provides a monorepo scaffold, frontend and backend shells, local development infrastructure, Cookie-based authentication, owner-scoped project workspace APIs, local file storage, and synchronous document ingestion foundations. It does not implement embeddings, vector retrieval, RAG, Agent workflows, OCR, or cloud object storage.
 
 ## Repository Structure
 
@@ -21,6 +21,7 @@ This repository currently contains the project bootstrap plus the `change-002` a
 - PostgreSQL, Redis, and Qdrant run in Docker; for `change-003`, PostgreSQL is required by the application flow and local file uploads are stored on the host filesystem under the configured storage root.
 - Authentication uses a backend-issued HttpOnly Cookie. The frontend never stores JWTs in `localStorage` or `sessionStorage` and sends authenticated requests with `credentials: "include"`.
 - Uploaded files are stored locally under `STORAGE_ROOT`, and the storage directory must remain outside Git-tracked files.
+- Document ingestion is currently synchronous and runs inside the backend process when a user triggers processing from the project detail page.
 - The current scaffold is designed to support future document, RAG, Agent, and export changes without restructuring the repository.
 
 ## Local Startup
@@ -61,6 +62,8 @@ This repository currently contains the project bootstrap plus the `change-002` a
    - Create and list owner-scoped projects at `/projects`
    - Open the project document workspace at `/projects/:projectId`
    - Upload supported files (`PDF`, `TXT`, `MD`, `CSV`) to the selected project
+   - Trigger document processing from the file list
+   - Confirm document status and chunk counts update after processing
 
 ## Required Environment Notes
 
@@ -72,6 +75,8 @@ This repository currently contains the project bootstrap plus the `change-002` a
 - `STORAGE_ROOT` defaults to `storage` at the repository root.
 - `MAX_UPLOAD_SIZE_BYTES` controls the upload ceiling enforced by the backend.
 - `ALLOWED_UPLOAD_EXTENSIONS` and `ALLOWED_UPLOAD_MIME_TYPES` define the bounded local upload policy for this change.
+- `CHUNK_SIZE` and `CHUNK_OVERLAP` control character-based chunking for ingestion.
+- `CSV_PREVIEW_CHAR_LIMIT` bounds CSV ingestion to simple preview-style processing in this change.
 
 ## Implemented Scope So Far
 
@@ -80,19 +85,24 @@ This repository currently contains the project bootstrap plus the `change-002` a
 - Frontend authenticated dashboard workspace
 - Frontend current-user project list, create-project form, and project detail placeholder
 - Frontend project-level document upload, file list, and delete UI
+- Frontend document processing controls, status display, and chunk-count display
 - Backend health check
 - Backend register, login, logout, and current-user endpoints
 - Backend owner-scoped project create, list, detail, and delete APIs
 - Backend owner-scoped document upload, list, detail, and delete APIs with local filesystem storage
+- Backend synchronous document parsing, text cleaning, chunking, and PostgreSQL chunk persistence
 - Docker Compose for PostgreSQL, Redis, and Qdrant
 - Root `.env.example`
 
 ## Out of Scope
 
-- Document parsing and knowledge base ingestion beyond raw file storage
+- Embeddings and vector database integration
+- Vector retrieval, RAG answering, and agent orchestration
+- OCR, image parsing, and complex table extraction
+- External literature retrieval and async worker queues
 - RAG retrieval and chat
 - Agent orchestration and skills execution
-- OCR and cloud object storage
+- Cloud object storage
 - Third-party login, email verification, password reset, and payments
 - Production deployment pipeline
 
