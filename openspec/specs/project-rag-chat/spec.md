@@ -53,11 +53,15 @@ The system SHALL provide a streaming chat endpoint so cited assistant answers ar
 - **THEN** the backend SHALL stream the answer response to the frontend and SHALL save the finalized assistant message after the stream finishes successfully
 
 ### Requirement: Project chat SHALL answer from retrieved project evidence with citations
-The system SHALL answer project questions using retrieved project-scoped evidence and SHALL return source information including source document, page number where available, and supporting snippet.
+The system SHALL answer project questions using retrieved project-scoped evidence and SHALL return source information including source document, page number where available, and supporting snippet, and the `research_qa` skill introduced in the Agent framework SHALL reuse the same backend-only evidence-grounded answer principles rather than bypassing chat retrieval safeguards.
 
 #### Scenario: Cited answer is returned
 - **WHEN** retrieval returns sufficient evidence for a project question
 - **THEN** the system SHALL generate an answer accompanied by source document, page, and snippet information
+
+#### Scenario: Research QA skill reuses bounded RAG answer rules
+- **WHEN** the Agent framework executes a `research_qa` task
+- **THEN** the resulting answer behavior SHALL remain evidence-grounded, owner-scoped, and citation-bearing under the same project retrieval constraints used by project chat
 
 ### Requirement: RAG answers SHALL explicitly acknowledge insufficient evidence
 If retrieval evidence is absent or insufficient, the system SHALL answer that the current knowledge base does not contain enough information rather than fabricating unsupported claims.

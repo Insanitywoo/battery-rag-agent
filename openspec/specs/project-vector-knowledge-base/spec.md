@@ -31,7 +31,7 @@ The system SHALL support rebuilding a project's vector knowledge base, and rebui
 - **THEN** the resulting vector state SHALL correspond to the current chunk set rather than accumulating stale duplicates
 
 ### Requirement: Semantic retrieval SHALL remain owner-scoped and project-scoped
-The system SHALL provide semantic retrieval over project vectors, and retrieval MUST enforce both `user_id` and `project_id` filters at the Qdrant query layer.
+The system SHALL provide semantic retrieval over project vectors, and retrieval MUST enforce both `user_id` and `project_id` filters at the Qdrant query layer for chat and for all Agent or Skill executions that reuse project retrieval.
 
 #### Scenario: Retrieval returns only current project evidence
 - **WHEN** an authenticated owner issues a semantic retrieval query for a project they own
@@ -40,6 +40,10 @@ The system SHALL provide semantic retrieval over project vectors, and retrieval 
 #### Scenario: Cross-user or cross-project retrieval is blocked
 - **WHEN** a retrieval request targets another user's project context
 - **THEN** the system SHALL reject the request or return no evidence outside the owner's scoped project
+
+#### Scenario: Agent retrieval returns only current project evidence
+- **WHEN** an authenticated owner executes an Agent task that requires project retrieval
+- **THEN** the retrieval results SHALL be limited to vectors belonging to that user and that project
 
 ### Requirement: Vector retrieval payloads SHALL support cited chat answers safely
 The system SHALL preserve retrieval payload metadata needed for downstream chat citations, and chat retrieval MUST use the current authenticated owner and active project as mandatory Qdrant filters.

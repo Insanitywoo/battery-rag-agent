@@ -31,7 +31,7 @@ The system SHALL allow an authenticated user to retrieve details for a specific 
 - **THEN** the system SHALL reject the request
 
 ### Requirement: Project detail scope SHALL remain limited to project metadata in this change
-The project detail capability introduced in this change SHALL expand from project metadata plus document ingestion controls into owner-scoped project metadata plus knowledge-base build state and chat entry structure, and MUST NOT introduce Agent, Skills, external retrieval, or broader research-automation workflows.
+The project detail capability introduced in this change SHALL expand from project metadata plus knowledge-base build state and chat entry structure into owner-scoped project metadata plus chat and Agent entry structure, and MUST NOT introduce external retrieval, external tools, or broader autonomous research workflows.
 
 #### Scenario: Project detail remains within project knowledge-base scope
 - **WHEN** project detail behavior is reviewed in this change
@@ -40,6 +40,10 @@ The project detail capability introduced in this change SHALL expand from projec
 #### Scenario: Project chat route remains project-scoped and owner-scoped
 - **WHEN** an authenticated owner enters chat from project detail
 - **THEN** the resulting chat experience SHALL remain scoped to that owner's current project sessions and retrieved sources only
+
+#### Scenario: Project Agent route remains project-scoped and owner-scoped
+- **WHEN** an authenticated owner enters the Agent page from project detail
+- **THEN** the resulting Agent experience SHALL remain scoped to that owner's current project, current task history, and current project sources only
 
 ### Requirement: Authenticated users SHALL be able to delete only their own projects
 The system SHALL allow an authenticated user to delete a project only when the project is owned by that user.
