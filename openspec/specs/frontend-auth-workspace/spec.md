@@ -44,11 +44,11 @@ The frontend SHALL provide a project workspace that includes a project list view
 - **THEN** the frontend SHALL render a form for creating a new project
 
 ### Requirement: Frontend MAY provide only a reserved project-detail entry point in this change
-The frontend SHALL provide a functional project-detail route for the authenticated owner that includes file upload, file list, and file delete interactions for that project, but it MUST remain limited to document-management scope and MUST NOT implement document parsing, knowledge base, RAG, Agent, or Skills workflows.
+The frontend SHALL provide a functional project-detail route for the authenticated owner that includes document ingestion controls, document processing status, and chunk-count display for that project, but it MUST remain limited to document-management and ingestion scope and MUST NOT implement embeddings, vector search, RAG, Agent, or Skills workflows.
 
-#### Scenario: Project-detail route becomes a minimal document workspace
+#### Scenario: Project-detail route becomes a minimal ingestion workspace
 - **WHEN** an authenticated owner enters the project-detail route from the project list
-- **THEN** the frontend SHALL render the project-level document workspace with upload and list/delete controls, and SHALL exclude downstream research workflows
+- **THEN** the frontend SHALL render the project-level ingestion workspace with upload/list/delete plus processing controls and status feedback, and SHALL exclude downstream research workflows
 
 ### Requirement: Frontend SHALL not embed backend secrets or sensitive service keys
 The frontend MUST NOT store backend JWT secrets, provider API keys, or other server-side sensitive keys in client code, browser-exposed configuration, or frontend environment variables.

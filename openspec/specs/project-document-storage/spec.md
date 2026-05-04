@@ -26,11 +26,11 @@ The system SHALL accept only supported document types in this change, SHALL vali
 - **THEN** the system SHALL reject the upload and SHALL NOT persist document metadata or raw file content
 
 ### Requirement: Document metadata SHALL be persisted with explicit ownership and storage fields
-The system SHALL persist document metadata for every accepted upload, including ownership fields, file identity, file size, MIME information, storage path, and document status.
+The system SHALL persist document metadata for every accepted upload, and document records in this change SHALL also support ingestion lifecycle fields including `error_message`, `processed_at`, and `chunk_count`.
 
-#### Scenario: Accepted upload creates metadata record
-- **WHEN** a valid upload is accepted
-- **THEN** the system SHALL persist document metadata including `id`, `user_id`, `project_id`, `filename`, `original_filename`, `file_type`, `mime_type`, `file_size`, `storage_path`, `status`, `created_at`, and `updated_at`
+#### Scenario: Document record tracks ingestion outcomes
+- **WHEN** a document is processed successfully or fails during ingestion
+- **THEN** the corresponding document record SHALL be able to store processing outcome metadata, including status, processed timestamp, chunk count, and sanitized failure message when relevant
 
 ### Requirement: Stored file paths and filenames SHALL be handled safely
 The system SHALL sanitize user-supplied filename information for display, SHALL generate server-controlled storage paths, and MUST NOT allow uploaded filenames to escape the configured storage root.
@@ -62,9 +62,9 @@ The system SHALL allow an authenticated owner to delete a document only within a
 - **THEN** the system SHALL reject the request and SHALL NOT remove the other user's metadata or file
 
 ### Requirement: This change SHALL not execute or process uploaded file contents
-The system MUST NOT execute code from uploaded files and MUST NOT introduce parsing, chunking, embedding, OCR, vector indexing, RAG, Agent, or Skills workflows in this change.
+The system MAY parse, clean, and chunk uploaded document contents for owner-scoped ingestion in this change, but it MUST NOT execute code from uploaded files and MUST NOT introduce embeddings, vector indexing, RAG, Agent, Skills, OCR, or complex external retrieval workflows.
 
-#### Scenario: Upload scope remains storage-only
+#### Scenario: Ingestion scope remains bounded
 - **WHEN** the document workflow is reviewed in this change
-- **THEN** accepted behavior SHALL remain limited to file storage and metadata management rather than content execution or downstream research processing
+- **THEN** accepted behavior SHALL include parsing, cleaning, and chunk persistence only, and SHALL exclude content execution or downstream retrieval workflows
 

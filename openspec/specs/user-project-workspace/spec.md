@@ -29,11 +29,11 @@ The system SHALL allow an authenticated user to retrieve details for a specific 
 - **THEN** the system SHALL reject the request
 
 ### Requirement: Project detail scope SHALL remain limited to project metadata in this change
-The project detail capability introduced in this change SHALL expand from metadata-only scope into owner-scoped project metadata plus document-management structure, and MUST NOT introduce document parsing, knowledge base construction, RAG, Agent, or Skills business workflows.
+The project detail capability introduced in this change SHALL expand from project metadata plus document-management structure into owner-scoped project metadata plus document ingestion controls and status display, and MUST NOT introduce embeddings, vector search, RAG, Agent, or Skills workflows.
 
-#### Scenario: Project detail remains within project-and-document-workspace scope
+#### Scenario: Project detail remains within project-and-ingestion-workspace scope
 - **WHEN** project detail behavior is reviewed in this change
-- **THEN** the returned or displayed detail scope SHALL remain limited to project-level metadata plus owner-scoped document workspace structure, and SHALL NOT expose parsing, knowledge-base, RAG, Agent, or Skills workflows
+- **THEN** the returned or displayed detail scope SHALL remain limited to project metadata plus owner-scoped document ingestion workflow structure, and SHALL NOT expose embeddings, vectors, RAG, Agent, or Skills workflows
 
 ### Requirement: Authenticated users SHALL be able to delete only their own projects
 The system SHALL allow an authenticated user to delete a project only when the project is owned by that user.
