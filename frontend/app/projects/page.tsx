@@ -107,8 +107,8 @@ export default function ProjectsPage() {
             </p>
             <h1 className="mt-4 text-4xl font-semibold text-ink">Your research projects</h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-              Projects are owner-scoped. This page only manages the current user&apos;s
-              project metadata and reserves the project-detail entry for a later change.
+              Projects are owner-scoped. Each workspace now expands into document upload,
+              ingestion, vector knowledge-base build, and project-scoped RAG chat.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -203,7 +203,7 @@ export default function ProjectsPage() {
                       href={`/projects/${project.id}`}
                       className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
                     >
-                      View detail placeholder
+                      Open workspace
                     </Link>
                   </div>
                 </div>

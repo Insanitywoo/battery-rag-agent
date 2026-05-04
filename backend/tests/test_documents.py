@@ -67,6 +67,7 @@ def test_owner_can_upload_list_detail_and_delete_document(client: TestClient) ->
     assert payload["original_filename"] == "paper.md"
     assert payload["file_type"] == "md"
     assert payload["status"] == "uploaded"
+    assert payload["embedding_status"] == "not_indexed"
 
     list_response = client.get(f"/api/projects/{project_id}/documents")
     assert list_response.status_code == 200

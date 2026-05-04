@@ -88,6 +88,9 @@ def test_owner_scoped_project_access(app) -> None:
 
         detail_response = alice_client.get(f"/api/projects/{project_id}")
         assert detail_response.status_code == 200
+        detail_payload = detail_response.json()
+        assert "knowledge_base" in detail_payload
+        assert detail_payload["knowledge_base"]["can_chat"] is False
 
         register_user(bob_client, name="Bob", email="bob@example.com", password="secret123")
         login_user(bob_client, email="bob@example.com", password="secret123")

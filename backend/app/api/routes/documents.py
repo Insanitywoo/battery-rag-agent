@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.auth import MessageResponse
 from app.schemas.document import DocumentResponse
 from app.services.ingestion import process_document_ingestion
+from app.services.vector_store import VectorStoreError, get_vector_store
 from app.services.storage import delete_stored_file, save_upload_file
 
 router = APIRouter(prefix="/projects/{project_id}/documents", tags=["documents"])
@@ -95,6 +96,14 @@ def delete_document(
 ) -> MessageResponse:
     get_owned_project(db, current_user.id, project_id)
     document = _get_owned_document(db, user_id=current_user.id, project_id=project_id, document_id=document_id)
+    try:
+        get_vector_store().delete_document_vectors(
+            user_id=current_user.id,
+            project_id=project_id,
+            document_id=document.id,
+        )
+    except VectorStoreError:
+        pass
     delete_stored_file(document.storage_path)
     db.delete(document)
     db.commit()

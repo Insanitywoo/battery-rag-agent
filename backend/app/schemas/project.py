@@ -19,3 +19,23 @@ class ProjectResponse(BaseModel):
     description: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class KnowledgeBaseStatusResponse(BaseModel):
+    total_documents: int
+    processed_documents: int
+    embedded_documents: int
+    total_chunks: int
+    indexed_chunks: int
+    can_chat: bool
+    needs_rebuild: bool
+    last_embedded_at: datetime | None
+
+
+class ProjectDetailResponse(ProjectResponse):
+    knowledge_base: KnowledgeBaseStatusResponse
+
+
+class KnowledgeBaseBuildResponse(BaseModel):
+    message: str
+    knowledge_base: KnowledgeBaseStatusResponse

@@ -7,6 +7,7 @@ dependencies = [
   "bcrypt==4.3.0",
   "email-validator==2.2.0",
   "fastapi==0.115.12",
+  "httpx==0.28.1",
   "PyJWT==2.10.1",
   "pypdf==5.5.0",
   "python-multipart==0.0.20",
@@ -18,12 +19,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "httpx==0.28.1",
   "pytest==8.3.5",
 ]
 
 [tool.pytest.ini_options]
-addopts = "--basetemp=.pytest_tmp"
+addopts = "--basetemp=.pytest_basetemp"
 
 [tool.uv]
 package = false

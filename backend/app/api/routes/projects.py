@@ -9,7 +9,8 @@ from app.db.session import get_db
 from app.models.project import Project
 from app.models.user import User
 from app.schemas.auth import MessageResponse
-from app.schemas.project import ProjectCreateRequest, ProjectResponse
+from app.schemas.project import ProjectCreateRequest, ProjectDetailResponse, ProjectResponse
+from app.services.rag import summarize_knowledge_base_status
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -43,13 +44,25 @@ def list_projects(
     )
 
 
-@router.get("/{project_id}", response_model=ProjectResponse)
+@router.get("/{project_id}", response_model=ProjectDetailResponse)
 def get_project(
     project_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Project:
-    return get_owned_project(db, current_user.id, project_id)
+) -> ProjectDetailResponse:
+    project = get_owned_project(db, current_user.id, project_id)
+    knowledge_base = summarize_knowledge_base_status(db, user_id=current_user.id, project_id=project_id)
+    return ProjectDetailResponse.model_validate(
+        {
+            "id": project.id,
+            "owner_id": project.owner_id,
+            "name": project.name,
+            "description": project.description,
+            "created_at": project.created_at,
+            "updated_at": project.updated_at,
+            "knowledge_base": knowledge_base.model_dump(),
+        }
+    )
 
 
 @router.delete("/{project_id}", response_model=MessageResponse)

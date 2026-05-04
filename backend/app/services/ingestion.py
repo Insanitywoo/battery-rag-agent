@@ -10,7 +10,7 @@ from sqlalchemy import delete as sa_delete
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.models.document import Document, DocumentStatus
+from app.models.document import Document, DocumentStatus, EmbeddingStatus
 from app.models.document_chunk import DocumentChunk
 from app.services.storage import resolve_storage_path
 
@@ -183,8 +183,10 @@ def build_document_chunks(document: Document) -> list[DocumentChunk]:
 
 def _mark_document_failed(db: Session, document: Document, message: str) -> Document:
     document.status = DocumentStatus.FAILED.value
+    document.embedding_status = EmbeddingStatus.NOT_INDEXED.value
     document.error_message = message
     document.processed_at = None
+    document.embedded_at = None
     document.chunk_count = 0
     db.add(document)
     db.commit()
@@ -194,8 +196,10 @@ def _mark_document_failed(db: Session, document: Document, message: str) -> Docu
 
 def process_document_ingestion(db: Session, document: Document) -> Document:
     document.status = DocumentStatus.PROCESSING.value
+    document.embedding_status = EmbeddingStatus.NOT_INDEXED.value
     document.error_message = None
     document.processed_at = None
+    document.embedded_at = None
     document.chunk_count = 0
     db.add(document)
     db.execute(sa_delete(DocumentChunk).where(DocumentChunk.document_id == document.id))
@@ -206,8 +210,10 @@ def process_document_ingestion(db: Session, document: Document) -> Document:
         chunks = build_document_chunks(document)
         db.add_all(chunks)
         document.status = DocumentStatus.PROCESSED.value
+        document.embedding_status = EmbeddingStatus.NOT_INDEXED.value
         document.error_message = None
         document.processed_at = _utc_now()
+        document.embedded_at = None
         document.chunk_count = len(chunks)
         db.add(document)
         db.commit()

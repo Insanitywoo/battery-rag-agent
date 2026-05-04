@@ -1,47 +1,78 @@
 # Battery-RAG Agent
 
-Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, BMS, control engineering, and AI research workflows.
-
-This repository currently contains the project bootstrap plus the `change-002` auth foundation, `change-003` document storage foundation, and an in-progress `change-004` ingestion pipeline for parsing and chunk persistence. It provides a monorepo scaffold, frontend and backend shells, local development infrastructure, Cookie-based authentication, owner-scoped project workspace APIs, local file storage, and synchronous document ingestion foundations. It does not implement embeddings, vector retrieval, RAG, Agent workflows, OCR, or cloud object storage.
+Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, control engineering, and AI research workflows. The current repository now includes the project bootstrap, authentication and owner-scoped workspace, project document upload and ingestion, project-level vector knowledge-base build, and a bounded project RAG chat experience.
 
 ## Repository Structure
 
 ```text
 .
-├── frontend/   # Next.js + React + Tailwind CSS web shell
-├── backend/    # FastAPI API shell
-├── openspec/   # Product specs and change management artifacts
-└── docker-compose.yml / .env.example / README.md
+├── frontend/   # Next.js + React + Tailwind CSS web app
+├── backend/    # FastAPI API service
+├── openspec/   # Product source of truth and change history
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
+
+## Current Scope
+
+- User registration, login, logout, and current-user session with HttpOnly Cookie auth
+- Owner-scoped project create, list, detail, and delete flows
+- Project-level document upload, local file storage, list, detail, and delete flows
+- Synchronous document ingestion for PDF, TXT, MD, and CSV preview handling
+- Chunk persistence in PostgreSQL
+- Project vector knowledge-base build and rebuild
+- Qdrant payloads filtered by `user_id` and `project_id`
+- Project-scoped chat sessions and messages
+- Backend-only LLM gateway configuration
+- Streaming RAG chat endpoint and frontend streaming chat UI
+- Citation persistence with `document_id`, `document_name`, `page_number`, `chunk_id`, `chunk_index`, and `excerpt`
+
+## Still Out of Scope
+
+- Agent orchestration and Skills execution
+- OCR, image parsing, and complex table extraction
+- External literature retrieval
+- Rerank, BM25, and hybrid retrieval
+- Embedding queues or Celery-style async workers
+- Third-party login, email verification, password reset, billing, and payments
 
 ## Local Development Model
 
-- `docker-compose.yml` provisions shared dependency services for local development.
-- The frontend and backend applications are started separately on the host during development.
-- PostgreSQL, Redis, and Qdrant run in Docker; for `change-003`, PostgreSQL is required by the application flow and local file uploads are stored on the host filesystem under the configured storage root.
-- Authentication uses a backend-issued HttpOnly Cookie. The frontend never stores JWTs in `localStorage` or `sessionStorage` and sends authenticated requests with `credentials: "include"`.
-- Uploaded files are stored locally under `STORAGE_ROOT`, and the storage directory must remain outside Git-tracked files.
-- Document ingestion is currently synchronous and runs inside the backend process when a user triggers processing from the project detail page.
-- The current scaffold is designed to support future document, RAG, Agent, and export changes without restructuring the repository.
+- `docker-compose.yml` provisions PostgreSQL, Redis, and Qdrant for local development.
+- The frontend and backend run on the host machine during development.
+- Authentication uses a backend-issued HttpOnly Cookie. The frontend never stores JWTs in `localStorage` or `sessionStorage`.
+- Protected frontend requests use `credentials: "include"`.
+- Uploaded files are stored locally under `STORAGE_ROOT`.
+- Vector build and RAG chat are owner-scoped and project-scoped.
+- Model keys stay on the backend only.
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and adjust values as needed.
+
+Important settings:
+
+- `JWT_SECRET` is required.
+- `COOKIE_SECURE=false` is appropriate for local HTTP development.
+- `DATABASE_URL` may be left empty to derive from the PostgreSQL compose settings.
+- `STORAGE_ROOT` defaults to `storage`.
+- `QDRANT_URL` defaults to `http://127.0.0.1:6333`.
+- `QDRANT_COLLECTION_NAME` controls the shared vector collection name.
+- `LLM_PROVIDER=mock` is the easiest local default for bounded development and smoke checks.
+- Set `LLM_PROVIDER` plus `LLM_API_BASE_URL`, `LLM_API_KEY`, `LLM_CHAT_MODEL`, and `LLM_EMBEDDING_MODEL` to use a real backend model provider.
+- `RAG_TOP_K`, `RAG_MIN_SIMILARITY`, and `CHAT_HISTORY_LIMIT` control retrieval and prompt assembly.
 
 ## Local Startup
 
-1. Copy `.env.example` to `.env` and adjust values if needed.
-2. Start shared local services:
+1. Copy `.env.example` to `.env`.
+2. Start shared dependency services:
 
    ```bash
    docker compose up -d postgres redis qdrant
    ```
 
-3. Install frontend dependencies and start the frontend:
-
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-4. Install backend dependencies with `uv` and start the backend:
+3. Start the backend with `uv`:
 
    ```bash
    cd backend
@@ -49,69 +80,42 @@ This repository currently contains the project bootstrap plus the `change-002` a
    uv run uvicorn app.main:app --reload
    ```
 
-5. Open the app in your browser:
+4. Start the frontend:
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+5. Open:
 
    - Frontend: `http://localhost:3000`
    - Backend health check: `http://localhost:8000/api/health`
+   - Backend docs: `http://localhost:8000/docs`
 
-6. Validate the implemented workspace and storage flow:
+## Suggested Manual Validation Flow
 
-   - Register a user at `/register`
-   - Log in at `/login`
-   - Enter the authenticated dashboard at `/dashboard`
-   - Create and list owner-scoped projects at `/projects`
-   - Open the project document workspace at `/projects/:projectId`
-   - Upload supported files (`PDF`, `TXT`, `MD`, `CSV`) to the selected project
-   - Trigger document processing from the file list
-   - Confirm document status and chunk counts update after processing
+1. Register at `/register`.
+2. Log in at `/login`.
+3. Open `/projects` and create a project.
+4. Open the project workspace at `/projects/:projectId`.
+5. Upload a supported file.
+6. Process the document into chunks.
+7. Build or rebuild the project vector DB.
+8. Open `/projects/:projectId/chat`.
+9. Create a chat session and ask a project-scoped question.
+10. Confirm the answer streams in and the assistant message shows saved citations.
 
-## Required Environment Notes
+## Notes on RAG Chat
 
-- `JWT_SECRET` is required. The backend will fail to start if it is missing.
-- `COOKIE_SECURE=false` is appropriate for local HTTP development. Set `COOKIE_SECURE=true` in production.
-- `COOKIE_SAMESITE` defaults to `lax`.
-- Leave `DATABASE_URL` empty to use the composed PostgreSQL settings, or set it explicitly to override the connection string.
-- `BACKEND_CORS_ORIGINS` should include the frontend origin, such as `http://localhost:3000`.
-- `STORAGE_ROOT` defaults to `storage` at the repository root.
-- `MAX_UPLOAD_SIZE_BYTES` controls the upload ceiling enforced by the backend.
-- `ALLOWED_UPLOAD_EXTENSIONS` and `ALLOWED_UPLOAD_MIME_TYPES` define the bounded local upload policy for this change.
-- `CHUNK_SIZE` and `CHUNK_OVERLAP` control character-based chunking for ingestion.
-- `CSV_PREVIEW_CHAR_LIMIT` bounds CSV ingestion to simple preview-style processing in this change.
-
-## Implemented Scope So Far
-
-- Frontend landing page placeholder
-- Frontend login and registration pages
-- Frontend authenticated dashboard workspace
-- Frontend current-user project list, create-project form, and project detail placeholder
-- Frontend project-level document upload, file list, and delete UI
-- Frontend document processing controls, status display, and chunk-count display
-- Backend health check
-- Backend register, login, logout, and current-user endpoints
-- Backend owner-scoped project create, list, detail, and delete APIs
-- Backend owner-scoped document upload, list, detail, and delete APIs with local filesystem storage
-- Backend synchronous document parsing, text cleaning, chunking, and PostgreSQL chunk persistence
-- Docker Compose for PostgreSQL, Redis, and Qdrant
-- Root `.env.example`
-
-## Out of Scope
-
-- Embeddings and vector database integration
-- Vector retrieval, RAG answering, and agent orchestration
-- OCR, image parsing, and complex table extraction
-- External literature retrieval and async worker queues
-- RAG retrieval and chat
-- Agent orchestration and skills execution
-- Cloud object storage
-- Third-party login, email verification, password reset, and payments
-- Production deployment pipeline
+- Chat uses retrieval plus prompt assembly plus backend LLM generation, not raw snippet return.
+- The prompt includes a system instruction, the most recent chat history, top-k retrieved chunks, and the current question.
+- If retrieval is insufficient, the system returns `当前知识库中没有足够信息`.
+- Saved assistant messages keep `sources_json` scoped to the current user and current project only.
 
 ## OpenSpec
 
-Project-level source of truth lives under `openspec/specs/`.
+Product source of truth lives under `openspec/specs/`.
 
-Archived bootstrap artifacts live under `openspec/changes/archive/`.
-
-The active change for the current implementation is:
-
-`openspec/changes/change-003-document-upload-and-storage/`
+The active implementation change in this repository is currently `change-005-vector-db-and-rag-chat`.

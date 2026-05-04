@@ -29,6 +29,12 @@ def app(tmp_path: Path):
     os.environ["CHUNK_SIZE"] = "40"
     os.environ["CHUNK_OVERLAP"] = "10"
     os.environ["CSV_PREVIEW_CHAR_LIMIT"] = "120"
+    os.environ["QDRANT_URL"] = "memory://local"
+    os.environ["QDRANT_COLLECTION_NAME"] = f"test-{tmp_path.name}"
+    os.environ["LLM_PROVIDER"] = "mock"
+    os.environ["RAG_TOP_K"] = "4"
+    os.environ["RAG_MIN_SIMILARITY"] = "0.15"
+    os.environ["CHAT_HISTORY_LIMIT"] = "6"
 
     from app.core.config import clear_settings_cache
     from app.db.session import clear_db_cache, init_db

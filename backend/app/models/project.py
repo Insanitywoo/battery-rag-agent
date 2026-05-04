@@ -26,3 +26,5 @@ class Project(Base):
     owner = relationship("User", back_populates="projects")
     documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")
     document_chunks = relationship("DocumentChunk", back_populates="project", cascade="all, delete-orphan")
+    chat_sessions = relationship("ChatSession", back_populates="project", cascade="all, delete-orphan")
+    chat_messages = relationship("ChatMessage", back_populates="project", cascade="all, delete-orphan")

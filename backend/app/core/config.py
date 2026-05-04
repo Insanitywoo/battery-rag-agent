@@ -70,6 +70,17 @@ class Settings:
     chunk_size: int
     chunk_overlap: int
     csv_preview_char_limit: int
+    qdrant_url: str
+    qdrant_api_key: str | None
+    qdrant_collection_name: str
+    llm_provider: str
+    llm_api_base_url: str | None
+    llm_api_key: str | None
+    llm_chat_model: str
+    llm_embedding_model: str
+    rag_top_k: int
+    rag_min_similarity: float
+    chat_history_limit: int
 
     @property
     def is_production(self) -> bool:
@@ -106,6 +117,17 @@ def get_settings() -> Settings:
         chunk_size=_get_int("CHUNK_SIZE", 1000),
         chunk_overlap=_get_int("CHUNK_OVERLAP", 150),
         csv_preview_char_limit=_get_int("CSV_PREVIEW_CHAR_LIMIT", 5000),
+        qdrant_url=os.getenv("QDRANT_URL", "http://127.0.0.1:6333"),
+        qdrant_api_key=os.getenv("QDRANT_API_KEY"),
+        qdrant_collection_name=os.getenv("QDRANT_COLLECTION_NAME", "battery_rag_chunks"),
+        llm_provider=os.getenv("LLM_PROVIDER", "mock"),
+        llm_api_base_url=os.getenv("LLM_API_BASE_URL"),
+        llm_api_key=os.getenv("LLM_API_KEY"),
+        llm_chat_model=os.getenv("LLM_CHAT_MODEL", "mock-chat"),
+        llm_embedding_model=os.getenv("LLM_EMBEDDING_MODEL", "mock-embedding"),
+        rag_top_k=max(1, _get_int("RAG_TOP_K", 4)),
+        rag_min_similarity=float(os.getenv("RAG_MIN_SIMILARITY", "0.15")),
+        chat_history_limit=max(1, _get_int("CHAT_HISTORY_LIMIT", 6)),
     )
 
 

@@ -21,6 +21,13 @@ class DocumentStatus(StrEnum):
     FAILED = "failed"
 
 
+class EmbeddingStatus(StrEnum):
+    NOT_INDEXED = "not_indexed"
+    INDEXING = "indexing"
+    INDEXED = "indexed"
+    FAILED = "failed"
+
+
 class Document(Base):
     __tablename__ = "documents"
 
@@ -34,8 +41,10 @@ class Document(Base):
     file_size: Mapped[int]
     storage_path: Mapped[str] = mapped_column(String(1024), unique=True)
     status: Mapped[str] = mapped_column(String(32), default=DocumentStatus.UPLOADED.value)
+    embedding_status: Mapped[str] = mapped_column(String(32), default=EmbeddingStatus.NOT_INDEXED.value)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    embedded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     chunk_count: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
