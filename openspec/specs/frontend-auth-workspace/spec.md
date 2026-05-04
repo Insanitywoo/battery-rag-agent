@@ -1,8 +1,10 @@
 # frontend-auth-workspace Specification
 
 ## Purpose
-TBD - created by archiving change change-002-auth-and-user-workspace. Update Purpose after archive.
+Define the authenticated frontend workspace for Battery-RAG Agent, including auth entry points, owner-scoped project workflows, and project-scoped RAG chat interaction.
+
 ## Requirements
+
 ### Requirement: Frontend SHALL provide user registration and login pages
 The frontend SHALL provide dedicated registration and login pages that let users submit credentials to the backend authentication flow.
 
@@ -44,11 +46,33 @@ The frontend SHALL provide a project workspace that includes a project list view
 - **THEN** the frontend SHALL render a form for creating a new project
 
 ### Requirement: Frontend MAY provide only a reserved project-detail entry point in this change
-The frontend SHALL provide a functional project-detail route for the authenticated owner that includes document ingestion controls, document processing status, and chunk-count display for that project, but it MUST remain limited to document-management and ingestion scope and MUST NOT implement embeddings, vector search, RAG, Agent, or Skills workflows.
+The frontend SHALL provide a functional project-detail route for the authenticated owner that includes knowledge-base build status and a project-chat entry point, and it SHALL provide a project-scoped chat page for asking questions against that project's knowledge base, but it MUST remain limited to project RAG chat scope and MUST NOT implement Agent or Skills workflows.
 
-#### Scenario: Project-detail route becomes a minimal ingestion workspace
-- **WHEN** an authenticated owner enters the project-detail route from the project list
-- **THEN** the frontend SHALL render the project-level ingestion workspace with upload/list/delete plus processing controls and status feedback, and SHALL exclude downstream research workflows
+#### Scenario: Project workspace includes knowledge-base controls and chat
+- **WHEN** an authenticated owner uses the project workspace after this change
+- **THEN** the frontend SHALL provide knowledge-base build or rebuild controls plus a project-scoped chat interface with cited answers, and SHALL exclude unrelated automation workflows
+
+### Requirement: Frontend project chat SHALL use authenticated streaming requests only
+The frontend SHALL call the backend streaming chat endpoint with `credentials: "include"` and SHALL render assistant output incrementally without storing provider secrets or tokens in browser storage.
+
+#### Scenario: Streaming chat uses cookie-authenticated fetch
+- **WHEN** the frontend sends a project chat request
+- **THEN** the request SHALL use `fetch` `ReadableStream` or equivalent streaming support with `credentials: "include"`
+
+#### Scenario: Frontend never stores model secrets or access tokens for chat
+- **WHEN** the project chat implementation is reviewed
+- **THEN** it SHALL not store model API keys in the browser and SHALL not introduce token persistence beyond the existing HttpOnly cookie approach
+
+### Requirement: Frontend project chat SHALL support owner-scoped session history
+The frontend SHALL let the authenticated owner view their project chat list, reopen a prior session, continue asking follow-up questions, and delete their own chat sessions.
+
+#### Scenario: User reopens a historical project session
+- **WHEN** an authenticated owner selects one of their prior sessions in a project
+- **THEN** the frontend SHALL display that session's message history and allow continued chat within it
+
+#### Scenario: User deletes one of their project sessions
+- **WHEN** an authenticated owner deletes a session from the chat list
+- **THEN** the frontend SHALL remove that session from the visible history after successful backend confirmation
 
 ### Requirement: Frontend SHALL not embed backend secrets or sensitive service keys
 The frontend MUST NOT store backend JWT secrets, provider API keys, or other server-side sensitive keys in client code, browser-exposed configuration, or frontend environment variables.
@@ -56,4 +80,3 @@ The frontend MUST NOT store backend JWT secrets, provider API keys, or other ser
 #### Scenario: Frontend configuration remains non-secret
 - **WHEN** frontend code and browser-exposed configuration are reviewed
 - **THEN** no backend signing secret or provider secret SHALL be present in client-accessible code or configuration
-

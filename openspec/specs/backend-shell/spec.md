@@ -3,7 +3,9 @@
 ## Purpose
 
 Define the baseline backend application shell for Battery-RAG Agent so future backend capabilities can grow on a stable FastAPI structure.
+
 ## Requirements
+
 ### Requirement: Backend SHALL use FastAPI
 The backend shell SHALL be scaffolded as a FastAPI service so that future API modules can be added within the agreed Python web framework.
 
@@ -26,9 +28,8 @@ The backend shell SHALL define a project structure that can accommodate future c
 - **THEN** those changes SHALL be able to extend the existing backend shell structure rather than replacing it with a different bootstrap pattern
 
 ### Requirement: Backend shell SHALL avoid business capability implementation
-The backend shell MUST NOT implement embedding generation, vector retrieval, RAG answering, Agent execution, Skills orchestration, OCR, or other out-of-scope business workflows in this change, but it MAY implement user authentication, owner-scoped project workspace APIs, project document storage APIs, and project document ingestion and chunk persistence APIs introduced by this change.
+The backend shell MUST NOT implement Agent execution, Skills orchestration, OCR, external literature retrieval, reranking, hybrid BM25 retrieval, billing logic, or other out-of-scope business workflows in this change, but it MAY implement user authentication, owner-scoped project workspace APIs, project document storage APIs, document ingestion and chunk persistence APIs, project vector indexing APIs, semantic retrieval APIs, streaming project-scoped RAG chat APIs, and owner-scoped chat history APIs introduced by this change.
 
-#### Scenario: Backend scope is limited to auth, workspace, storage, and ingestion
+#### Scenario: Backend scope is limited to auth, workspace, ingestion, vector DB, and RAG chat
 - **WHEN** the backend shell is reviewed for accepted functionality in this change
-- **THEN** the functional expansion beyond health check SHALL be limited to authentication, owner-scoped project workspace APIs, project document storage APIs, and document ingestion/chunk persistence APIs, and SHALL exclude embeddings, vectors, RAG, Agent, and Skills capabilities
-
+- **THEN** the functional expansion beyond health check SHALL be limited to authentication, owner-scoped workspace and document APIs, chunk persistence, vector indexing and retrieval, streaming project-scoped RAG chat, and owner-scoped chat session and message APIs, and SHALL exclude Agent, Skills, OCR, external retrieval, and advanced ranking workflows

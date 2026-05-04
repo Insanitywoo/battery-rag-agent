@@ -1,8 +1,10 @@
 # project-document-storage Specification
 
 ## Purpose
-TBD - created by archiving change change-003-document-upload-and-storage. Update Purpose after archive.
+Define owner-scoped project document storage so users can safely upload, inspect, and delete raw research files within their own projects.
+
 ## Requirements
+
 ### Requirement: Authenticated users SHALL be able to upload supported documents under their own projects
 The system SHALL allow an authenticated user to upload a document only within a project owned by that user, and it SHALL bind the created document record to both `user_id` and `project_id`.
 
@@ -26,11 +28,11 @@ The system SHALL accept only supported document types in this change, SHALL vali
 - **THEN** the system SHALL reject the upload and SHALL NOT persist document metadata or raw file content
 
 ### Requirement: Document metadata SHALL be persisted with explicit ownership and storage fields
-The system SHALL persist document metadata for every accepted upload, and document records in this change SHALL also support ingestion lifecycle fields including `error_message`, `processed_at`, and `chunk_count`.
+The system SHALL persist document metadata for every accepted upload, and document records in this change SHALL support ingestion lifecycle fields plus vector-build outcome fields including `error_message`, `processed_at`, `chunk_count`, `embedding_status`, and `embedded_at`.
 
-#### Scenario: Document record tracks ingestion outcomes
-- **WHEN** a document is processed successfully or fails during ingestion
-- **THEN** the corresponding document record SHALL be able to store processing outcome metadata, including status, processed timestamp, chunk count, and sanitized failure message when relevant
+#### Scenario: Document record tracks ingestion and vector outcomes
+- **WHEN** a document is processed successfully, fails during ingestion, is embedded successfully, or fails during vector build
+- **THEN** the corresponding document record SHALL be able to store processing and vector-build outcome metadata, including status, processed timestamp, chunk count, sanitized failure message when relevant, and vector-build status information
 
 ### Requirement: Stored file paths and filenames SHALL be handled safely
 The system SHALL sanitize user-supplied filename information for display, SHALL generate server-controlled storage paths, and MUST NOT allow uploaded filenames to escape the configured storage root.
@@ -62,9 +64,8 @@ The system SHALL allow an authenticated owner to delete a document only within a
 - **THEN** the system SHALL reject the request and SHALL NOT remove the other user's metadata or file
 
 ### Requirement: This change SHALL not execute or process uploaded file contents
-The system MAY parse, clean, and chunk uploaded document contents for owner-scoped ingestion in this change, but it MUST NOT execute code from uploaded files and MUST NOT introduce embeddings, vector indexing, RAG, Agent, Skills, OCR, or complex external retrieval workflows.
+The system MAY parse, clean, chunk, embed, and index uploaded document contents for owner-scoped ingestion and retrieval in later changes, but it MUST NOT execute code from uploaded files and MUST NOT introduce Agent, Skills, OCR, or complex external retrieval workflows as part of document storage itself.
 
-#### Scenario: Ingestion scope remains bounded
-- **WHEN** the document workflow is reviewed in this change
-- **THEN** accepted behavior SHALL include parsing, cleaning, and chunk persistence only, and SHALL exclude content execution or downstream retrieval workflows
-
+#### Scenario: Storage scope remains bounded
+- **WHEN** the document workflow is reviewed at the storage capability boundary
+- **THEN** accepted behavior SHALL remain limited to storage-safe document handling and compatible downstream preparation, and SHALL exclude content execution or unrelated automation workflows

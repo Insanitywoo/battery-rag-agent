@@ -1,8 +1,10 @@
 # document-ingestion-pipeline Specification
 
 ## Purpose
-TBD - created by archiving change change-004-document-ingestion-pipeline. Update Purpose after archive.
+Define the bounded document ingestion pipeline that parses supported project documents into owner-scoped cleaned chunks for downstream retrieval preparation.
+
 ## Requirements
+
 ### Requirement: Authenticated owners SHALL be able to trigger document ingestion for stored project documents
 The system SHALL allow an authenticated project owner to trigger ingestion for a document that belongs to that owner's project, and it SHALL reject unauthenticated or cross-user ingestion requests.
 
@@ -37,11 +39,15 @@ The system SHALL normalize and clean parsed document text before chunk generatio
 - **THEN** the ingestion workflow SHALL operate on cleaned text rather than raw parser output alone
 
 ### Requirement: The system SHALL generate and persist owner-scoped document chunks
-The system SHALL split cleaned document text into chunks using configured chunk size and overlap values, and each persisted chunk SHALL be bound to `user_id`, `project_id`, and `document_id`.
+The system SHALL split cleaned document text into chunks using configured chunk size and overlap values, SHALL bind each persisted chunk to `user_id`, `project_id`, and `document_id`, and SHALL continue to persist those chunks as the canonical source for downstream embedding and project-scoped retrieval workflows.
 
 #### Scenario: Chunks are persisted with lineage and metadata
 - **WHEN** ingestion succeeds
 - **THEN** the system SHALL persist chunks containing `page_number`, `chunk_index`, `content`, `char_count`, and ownership lineage fields
+
+#### Scenario: Persisted chunks are retrieval-ready
+- **WHEN** ingestion succeeds
+- **THEN** the resulting chunks SHALL be usable as the authoritative source for project-level vector indexing and later retrieval
 
 ### Requirement: Document status SHALL reflect ingestion outcomes
 The system SHALL update document status during ingestion, SHALL set `processed` on success, SHALL set `failed` on failure, and SHALL record outcome metadata including `processed_at`, `chunk_count`, and sanitized `error_message` where applicable.
@@ -74,4 +80,3 @@ The system SHALL ensure that persisted chunk content is produced only from the a
 #### Scenario: Chunk lineage stays owner-scoped
 - **WHEN** chunks are created for a processed document
 - **THEN** those chunks SHALL belong only to the current authenticated owner's document, project, and user scope
-

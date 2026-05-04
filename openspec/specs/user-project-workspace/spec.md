@@ -1,8 +1,10 @@
 # user-project-workspace Specification
 
 ## Purpose
-TBD - created by archiving change change-002-auth-and-user-workspace. Update Purpose after archive.
+Define the authenticated owner-scoped project workspace so each user can manage projects, inspect project state, and enter bounded downstream research workflows only within their own scope.
+
 ## Requirements
+
 ### Requirement: Authenticated users SHALL be able to create research projects
 The system SHALL allow an authenticated user to create a research project record that is bound to that user as the owner.
 
@@ -29,11 +31,15 @@ The system SHALL allow an authenticated user to retrieve details for a specific 
 - **THEN** the system SHALL reject the request
 
 ### Requirement: Project detail scope SHALL remain limited to project metadata in this change
-The project detail capability introduced in this change SHALL expand from project metadata plus document-management structure into owner-scoped project metadata plus document ingestion controls and status display, and MUST NOT introduce embeddings, vector search, RAG, Agent, or Skills workflows.
+The project detail capability introduced in this change SHALL expand from project metadata plus document ingestion controls into owner-scoped project metadata plus knowledge-base build state and chat entry structure, and MUST NOT introduce Agent, Skills, external retrieval, or broader research-automation workflows.
 
-#### Scenario: Project detail remains within project-and-ingestion-workspace scope
+#### Scenario: Project detail remains within project knowledge-base scope
 - **WHEN** project detail behavior is reviewed in this change
-- **THEN** the returned or displayed detail scope SHALL remain limited to project metadata plus owner-scoped document ingestion workflow structure, and SHALL NOT expose embeddings, vectors, RAG, Agent, or Skills workflows
+- **THEN** the returned or displayed detail scope SHALL remain limited to project metadata plus owner-scoped knowledge-base and chat-entry workflow structure, and SHALL NOT expose broader automation workflows
+
+#### Scenario: Project chat route remains project-scoped and owner-scoped
+- **WHEN** an authenticated owner enters chat from project detail
+- **THEN** the resulting chat experience SHALL remain scoped to that owner's current project sessions and retrieved sources only
 
 ### Requirement: Authenticated users SHALL be able to delete only their own projects
 The system SHALL allow an authenticated user to delete a project only when the project is owned by that user.
@@ -56,4 +62,3 @@ Every project API introduced in this change SHALL validate the current authentic
 #### Scenario: Cross-user project access is blocked
 - **WHEN** a client attempts to access another user's project by identifier
 - **THEN** the system SHALL reject the request and SHALL NOT expose project data
-
