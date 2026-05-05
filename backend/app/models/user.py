@@ -29,3 +29,4 @@ class User(Base):
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
     chat_messages = relationship("ChatMessage", back_populates="user", cascade="all, delete-orphan")
     agent_tasks = relationship("AgentTask", back_populates="user", cascade="all, delete-orphan")
+    writing_artifacts = relationship("WritingArtifact", back_populates="user", cascade="all, delete-orphan")

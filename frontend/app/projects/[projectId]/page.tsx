@@ -449,6 +449,12 @@ export default function ProjectDetailPage() {
               >
                 Open project agent
               </Link>
+              <Link
+                href={`/projects/${project.id}/writing`}
+                className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                Open paper writing
+              </Link>
             </div>
 
             <p className="mt-4 text-xs leading-6 text-slate-500">
@@ -522,6 +528,10 @@ export default function ProjectDetailPage() {
               <p>
                 The Agent workspace runs one bounded research task at a time and reuses the same
                 owner-scoped retrieval and evidence rules as project chat.
+              </p>
+              <p>
+                The Paper Writing workspace saves markdown drafts plus sources and unsupported claims
+                for the current owner and current project only.
               </p>
             </div>
           </article>

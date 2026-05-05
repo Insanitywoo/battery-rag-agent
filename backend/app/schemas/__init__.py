@@ -16,6 +16,7 @@ from app.schemas.project import (
     ProjectDetailResponse,
     ProjectResponse,
 )
+from app.schemas.writing import WritingArtifactResponse, WritingRunRequest
 
 __all__ = [
     "AgentResultPayload",
@@ -38,4 +39,6 @@ __all__ = [
     "UserLoginRequest",
     "UserRegistrationRequest",
     "UserResponse",
+    "WritingArtifactResponse",
+    "WritingRunRequest",
 ]

@@ -5,5 +5,15 @@ from app.models.document import Document
 from app.models.document_chunk import DocumentChunk
 from app.models.project import Project
 from app.models.user import User
+from app.models.writing_artifact import WritingArtifact
 
-__all__ = ["AgentTask", "ChatMessage", "ChatSession", "Document", "DocumentChunk", "Project", "User"]
+__all__ = [
+    "AgentTask",
+    "ChatMessage",
+    "ChatSession",
+    "Document",
+    "DocumentChunk",
+    "Project",
+    "User",
+    "WritingArtifact",
+]

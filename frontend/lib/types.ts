@@ -132,3 +132,25 @@ export type AgentTask = {
   created_at: string;
   updated_at: string;
 };
+
+export type WritingArtifactType =
+  | "outline"
+  | "introduction_outline"
+  | "related_work"
+  | "method_framework"
+  | "conclusion"
+  | "citation_check";
+
+export type WritingArtifact = {
+  id: string;
+  user_id: string;
+  project_id: string;
+  artifact_type: WritingArtifactType;
+  title: string;
+  content_markdown: string;
+  sources: SourceReference[];
+  warnings: string[];
+  unsupported_claims: string[];
+  created_at: string;
+  updated_at: string;
+};

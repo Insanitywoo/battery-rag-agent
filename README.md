@@ -1,6 +1,6 @@
 # Battery-RAG Agent
 
-Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, control engineering, and AI research workflows. The current repository includes the project bootstrap, authentication and owner-scoped workspace, project document upload and ingestion, project-level vector knowledge-base build, streaming RAG chat, and a bounded Agent plus Skills framework for project-scoped research tasks.
+Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, control engineering, and AI research workflows. The current repository includes the project bootstrap, authentication and owner-scoped workspace, project document upload and ingestion, project-level vector knowledge-base build, streaming RAG chat, a bounded Agent plus Skills framework for project-scoped research tasks, and an evidence-first paper writing assistant.
 
 ## Repository Structure
 
@@ -30,6 +30,9 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Project-scoped Agent routing and structured Skills execution
 - Agent task persistence with `agent_tasks`
 - Structured outputs for `research_qa`, `paper_summary`, `multi_paper_compare`, `literature_review`, `writing_outline`, and `evidence_check`
+- Paper writing assistant with saved `writing_artifacts`
+- Writing tasks for outline, introduction outline, related work, method framework, conclusion draft, citation check, and Markdown export
+- Evidence-first writing outputs that persist markdown content, sources, and unsupported claims per owner and project
 
 ## Still Out of Scope
 
@@ -113,6 +116,8 @@ Important settings:
 10. Confirm the answer streams in and the assistant message shows saved citations.
 11. Open `/projects/:projectId/agent`.
 12. Run a bounded Agent task and confirm the result includes task type, warnings, and sources.
+13. Open `/projects/:projectId/writing`.
+14. Generate a writing artifact, confirm saved sources and unsupported claims, then export it as Markdown.
 
 ## Notes on RAG Chat
 
@@ -129,8 +134,17 @@ Important settings:
 - Agent results and stored `agent_tasks` records remain bound to the current `user_id` and `project_id`.
 - The frontend calls the backend Agent endpoint with `credentials: "include"` and never exposes provider keys.
 
+## Notes on Paper Writing Assistant
+
+- The Paper Writing workspace is project-scoped and owner-scoped, just like chat, documents, chunks, vectors, and Agent tasks.
+- Writing generation reuses the existing project retrieval pipeline and backend-only LLM gateway.
+- Every saved `writing_artifact` stores `content_markdown`, `sources_json`, and `unsupported_claims_json`.
+- Markdown export is generated on the backend and returned through an authenticated owner-scoped endpoint.
+- The assistant is evidence-first: unsupported conclusions are flagged for manual confirmation instead of being presented as grounded facts.
+- The writing assistant does not implement Web Search, CrossRef, arXiv, BibTeX, LaTeX/Word/PDF export, experiment analysis, external tools, or full-paper ghostwriting.
+
 ## OpenSpec
 
 Product source of truth lives under `openspec/specs/`.
 
-The active implementation change in this repository is currently `change-006-agent-and-skills-framework`.
+The active implementation change in this repository is currently `change-007-paper-writing-assistant`.
