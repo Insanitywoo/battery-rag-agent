@@ -27,11 +27,11 @@ The backend SHALL provide a registry that can look up supported Skills by stable
 - **THEN** the system SHALL reject the execution safely and SHALL NOT fabricate a result
 
 ### Requirement: The Task Router Agent SHALL classify only supported bounded research tasks
-The system SHALL route user inputs only among the supported task types in this capability: `research_qa`, `paper_summary`, `multi_paper_compare`, `literature_review`, `writing_outline`, and `evidence_check`.
+The system SHALL route user inputs only among the supported task types in this capability, and this change SHALL expand the bounded task set to include writing-oriented tasks such as `introduction_outline`, `related_work_draft`, `method_framework`, `conclusion_draft`, `citation_check`, and `markdown_export` in addition to the existing bounded research tasks.
 
-#### Scenario: Routed task type stays within supported set
-- **WHEN** the router classifies a user request
-- **THEN** the routed task type SHALL be one of the supported bounded research task types for this capability
+#### Scenario: Writing task type stays within supported set
+- **WHEN** the router classifies a writing-oriented user request
+- **THEN** the routed task type SHALL be one of the supported bounded writing or research task types for this capability
 
 #### Scenario: Uncertain routing degrades safely
 - **WHEN** the router cannot determine a task type with enough confidence
@@ -45,11 +45,11 @@ The system SHALL persist an `agent_tasks` record for each task execution attempt
 - **THEN** the system SHALL store the task input, task type, status, result payload, and sanitized error state for that owner and project
 
 ### Requirement: Agent execution SHALL remain evidence-first
-Every Skill in this capability SHALL prefer project evidence over unsupported synthesis, SHALL avoid fabricating conclusions, and SHALL mark unsupported or weakly supported content with warnings or manual-confirmation language.
+Every Skill in this capability SHALL prefer project evidence over unsupported synthesis, SHALL avoid fabricating conclusions, and SHALL mark unsupported or weakly supported content with warnings or manual-confirmation language, including writing-oriented outputs.
 
-#### Scenario: Weak evidence produces warnings instead of fabricated claims
-- **WHEN** a Skill lacks enough evidence to support a conclusion
-- **THEN** the system SHALL return warnings, clarification, unsupported claims, or manual-confirmation language rather than inventing unsupported content
+#### Scenario: Writing-oriented Skill avoids fabricated citations
+- **WHEN** a writing-oriented Skill lacks enough evidence to support a citation, result, or claim
+- **THEN** the system SHALL return unsupported-claim markers or manual-confirmation language rather than inventing references, experiments, or sources
 
 ### Requirement: EvidenceCheckSkill SHALL identify unsupported claims
 The system SHALL provide an evidence-checking capability that can evaluate user-provided text against the current project knowledge base and identify unsupported claims.
