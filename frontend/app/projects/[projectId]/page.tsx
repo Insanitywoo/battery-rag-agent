@@ -455,6 +455,12 @@ export default function ProjectDetailPage() {
               >
                 Open paper writing
               </Link>
+              <Link
+                href={`/projects/${project.id}/external-references`}
+                className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                Open external references
+              </Link>
             </div>
 
             <p className="mt-4 text-xs leading-6 text-slate-500">
@@ -532,6 +538,10 @@ export default function ProjectDetailPage() {
               <p>
                 The Paper Writing workspace saves markdown drafts plus sources and unsupported claims
                 for the current owner and current project only.
+              </p>
+              <p>
+                External references stay as separately saved metadata records and are never auto-ingested
+                into chunks, embeddings, or the vector knowledge base.
               </p>
             </div>
           </article>

@@ -9,6 +9,13 @@ from app.schemas.chat import (
     SourceReferenceResponse,
 )
 from app.schemas.document import DocumentResponse
+from app.schemas.external_reference import (
+    ExternalReferenceContextResponse,
+    ExternalReferenceResponse,
+    ExternalReferenceSaveRequest,
+    ExternalReferenceSearchRequest,
+    ExternalReferenceSearchResponse,
+)
 from app.schemas.project import (
     KnowledgeBaseBuildResponse,
     KnowledgeBaseStatusResponse,
@@ -29,6 +36,11 @@ __all__ = [
     "ChatSessionDetailResponse",
     "ChatSessionSummaryResponse",
     "DocumentResponse",
+    "ExternalReferenceContextResponse",
+    "ExternalReferenceResponse",
+    "ExternalReferenceSaveRequest",
+    "ExternalReferenceSearchRequest",
+    "ExternalReferenceSearchResponse",
     "KnowledgeBaseBuildResponse",
     "KnowledgeBaseStatusResponse",
     "MessageResponse",

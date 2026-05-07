@@ -85,6 +85,9 @@ class Settings:
     agent_min_prompt_characters: int
     agent_max_claims: int
     agent_max_comparison_documents: int
+    external_tool_user_agent: str
+    external_search_timeout_seconds: float
+    crossref_mailto: str | None
 
     @property
     def is_production(self) -> bool:
@@ -136,6 +139,12 @@ def get_settings() -> Settings:
         agent_min_prompt_characters=max(8, _get_int("AGENT_MIN_PROMPT_CHARACTERS", 18)),
         agent_max_claims=max(1, _get_int("AGENT_MAX_CLAIMS", 6)),
         agent_max_comparison_documents=max(2, _get_int("AGENT_MAX_COMPARISON_DOCUMENTS", 3)),
+        external_tool_user_agent=os.getenv(
+            "EXTERNAL_TOOL_USER_AGENT",
+            "Battery-RAG-Agent/0.1 (+https://example.local/manual-verification-required)",
+        ),
+        external_search_timeout_seconds=float(os.getenv("EXTERNAL_SEARCH_TIMEOUT_SECONDS", "15")),
+        crossref_mailto=os.getenv("CROSSREF_MAILTO"),
     )
 
 

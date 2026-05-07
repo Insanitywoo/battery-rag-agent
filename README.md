@@ -1,6 +1,6 @@
 # Battery-RAG Agent
 
-Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, control engineering, and AI research workflows. The current repository includes the project bootstrap, authentication and owner-scoped workspace, project document upload and ingestion, project-level vector knowledge-base build, streaming RAG chat, a bounded Agent plus Skills framework for project-scoped research tasks, and an evidence-first paper writing assistant.
+Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, control engineering, and AI research workflows. The current repository includes the project bootstrap, authentication and owner-scoped workspace, project document upload and ingestion, project-level vector knowledge-base build, streaming RAG chat, a bounded Agent plus Skills framework for project-scoped research tasks, an evidence-first paper writing assistant, and a bounded external-references workspace for Crossref/arXiv metadata plus draft BibTeX export.
 
 ## Repository Structure
 
@@ -33,15 +33,19 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Paper writing assistant with saved `writing_artifacts`
 - Writing tasks for outline, introduction outline, related work, method framework, conclusion draft, citation check, and Markdown export
 - Evidence-first writing outputs that persist markdown content, sources, and unsupported claims per owner and project
+- Project-scoped external reference search against Crossref and arXiv from explicit user-entered queries
+- Curated `external_references` persistence with owner and project lineage
+- Draft BibTeX export for saved external references
+- Bounded Agent and writing reuse of saved external references under explicit `external reference` labeling
 
 ## Still Out of Scope
 
 - OCR, image parsing, and complex table extraction
-- External literature retrieval
 - Rerank, BM25, and hybrid retrieval
 - Embedding queues or Celery-style async workers
 - Third-party login, email verification, password reset, billing, and payments
-- External tools, web search, and complex multi-step autonomous ReAct workflows
+- Semantic Scholar integration, web-scale crawling, PDF download, and full-text scraping
+- Complex multi-step autonomous ReAct workflows
 
 ## Local Development Model
 
@@ -52,6 +56,8 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Uploaded files are stored locally under `STORAGE_ROOT`.
 - Vector build, chat, and Agent execution are owner-scoped and project-scoped.
 - Model keys stay on the backend only.
+- External provider calls use only explicit user-entered keyword, title, or DOI input from the External References workspace.
+- Saved external references remain separate from uploaded-document chunks, embeddings, and vector knowledge-base state.
 
 ## Environment Variables
 
@@ -70,6 +76,9 @@ Important settings:
 - `RAG_TOP_K`, `RAG_MIN_SIMILARITY`, and `CHAT_HISTORY_LIMIT` control retrieval and prompt assembly.
 - `AGENT_ENABLE_LLM_ROUTING=false` keeps Agent routing rules-only by default.
 - `AGENT_MIN_PROMPT_CHARACTERS`, `AGENT_MAX_CLAIMS`, and `AGENT_MAX_COMPARISON_DOCUMENTS` control bounded Agent execution behavior.
+- `EXTERNAL_TOOL_USER_AGENT` sets the backend-only outbound user-agent header for external metadata providers.
+- `EXTERNAL_SEARCH_TIMEOUT_SECONDS` bounds provider request time.
+- `CROSSREF_MAILTO` is optional but recommended when using Crossref heavily.
 
 ## Local Startup
 
@@ -118,6 +127,8 @@ Important settings:
 12. Run a bounded Agent task and confirm the result includes task type, warnings, and sources.
 13. Open `/projects/:projectId/writing`.
 14. Generate a writing artifact, confirm saved sources and unsupported claims, then export it as Markdown.
+15. Open `/projects/:projectId/external-references`.
+16. Search by keyword, title, or DOI, save one curated result, then export the project BibTeX draft.
 
 ## Notes on RAG Chat
 
@@ -133,6 +144,7 @@ Important settings:
 - `EvidenceCheckSkill` returns `unsupported_claims` when the current project knowledge base cannot support part of the user input.
 - Agent results and stored `agent_tasks` records remain bound to the current `user_id` and `project_id`.
 - The frontend calls the backend Agent endpoint with `credentials: "include"` and never exposes provider keys.
+- Literature-review-oriented Agent flows may attach saved external references, but those records are explicitly labeled as `external reference` and never treated as uploaded-document evidence.
 
 ## Notes on Paper Writing Assistant
 
@@ -141,10 +153,20 @@ Important settings:
 - Every saved `writing_artifact` stores `content_markdown`, `sources_json`, and `unsupported_claims_json`.
 - Markdown export is generated on the backend and returned through an authenticated owner-scoped endpoint.
 - The assistant is evidence-first: unsupported conclusions are flagged for manual confirmation instead of being presented as grounded facts.
-- The writing assistant does not implement Web Search, CrossRef, arXiv, BibTeX, LaTeX/Word/PDF export, experiment analysis, external tools, or full-paper ghostwriting.
+- Related-work and citation-support flows may append saved external reference notes, but those remain metadata-only and require manual confirmation.
+- The writing assistant does not implement Semantic Scholar, LaTeX/Word/PDF export, experiment analysis, external tools beyond Crossref/arXiv metadata, or full-paper ghostwriting.
+
+## Notes on External References
+
+- External search is authenticated, owner-scoped, and project-scoped.
+- The backend calls Crossref and arXiv with explicit user-entered query or DOI text only.
+- The system does not send private uploaded-document chunks, project chat history, or secret keys to external metadata providers.
+- Saved `external_references` store metadata only: source, title, authors, year, venue, DOI, URL, abstract, and a draft BibTeX record.
+- External references are never auto-ingested into chunks, embeddings, or Qdrant.
+- BibTeX export is draft-only. Users must verify author names, DOI, venue, year, and citation formatting manually.
 
 ## OpenSpec
 
 Product source of truth lives under `openspec/specs/`.
 
-The active implementation change in this repository is currently `change-007-paper-writing-assistant`.
+The active implementation change in this repository is currently `change-008-external-research-tools`.

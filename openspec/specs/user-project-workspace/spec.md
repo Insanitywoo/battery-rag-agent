@@ -30,12 +30,12 @@ The system SHALL allow an authenticated user to retrieve details for a specific 
 - **WHEN** an authenticated user requests a project owned by another user
 - **THEN** the system SHALL reject the request
 
-### Requirement: Project detail scope SHALL remain limited to project metadata in this change
-The project detail capability introduced in this change SHALL expand from project metadata plus knowledge-base build state and chat plus Agent entry structure into owner-scoped project metadata plus a Paper Writing entry structure, and MUST NOT introduce external retrieval, external tools, or broader autonomous research workflows.
+### Requirement: Project detail scope SHALL remain limited to bounded project research tools in this change
+The project detail capability introduced in this change SHALL expand from project metadata plus chat, Agent, and Paper Writing entry structure into owner-scoped project metadata plus an External References entry structure, and MUST NOT introduce unrestricted crawling or broader autonomous research workflows.
 
-#### Scenario: Project Paper Writing route remains project-scoped and owner-scoped
-- **WHEN** an authenticated owner enters the Paper Writing page from project detail
-- **THEN** the resulting writing experience SHALL remain scoped to that owner's current project, current writing artifacts, and current project sources only
+#### Scenario: Project External References route remains project-scoped and owner-scoped
+- **WHEN** an authenticated owner enters the External References page from project detail
+- **THEN** the resulting external-reference experience SHALL remain scoped to that owner's current project, current saved references, and current export actions only
 
 ### Requirement: Authenticated users SHALL be able to delete only their own projects
 The system SHALL allow an authenticated user to delete a project only when the project is owned by that user.

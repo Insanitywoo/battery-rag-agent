@@ -15,6 +15,13 @@ from app.models.document_chunk import DocumentChunk
 from app.models.project import Project
 from app.schemas.agent import AgentResultPayload, AgentResultSection, AgentTaskType
 from app.schemas.chat import SourceReferenceResponse
+from app.schemas.external_reference import ExternalReferenceContextResponse
+from app.services.external_references import (
+    build_external_reference_context,
+    build_external_reference_context_response,
+    build_external_reference_warning_summary,
+    list_saved_external_references,
+)
 from app.services.llm_gateway import LLMGatewayError, PromptChunk, get_llm_gateway
 from app.services.rag import INSUFFICIENT_INFORMATION_TEXT, RetrievedChunk, retrieve_project_chunks
 
@@ -131,6 +138,19 @@ def _llm_grounded_answer(system_instruction: str, user_input: str, chunks: list[
         )
     except LLMGatewayError as exc:
         raise SkillExecutionError(str(exc)) from exc
+
+
+def _load_external_reference_context(context: SkillContext, *, limit: int = 4) -> tuple[list[ExternalReferenceContextResponse], list[str], str]:
+    references = list_saved_external_references(
+        context.db,
+        user_id=context.user_id,
+        project_id=context.project_id,
+        limit=limit,
+    )
+    payload = [ExternalReferenceContextResponse.model_validate(build_external_reference_context_response(reference)) for reference in references]
+    warnings = build_external_reference_warning_summary(references)
+    context_text = "\n\n".join(build_external_reference_context(reference) for reference in references)
+    return payload, warnings, context_text
 
 
 class BaseSkill(ABC):
@@ -373,32 +393,61 @@ class LiteratureReviewSkill(BaseSkill):
 
     def execute(self, context: SkillContext) -> AgentResultPayload:
         chunks = self.retrieval_skill.execute(context)
-        if not chunks:
+        external_references, external_warnings, external_context = _load_external_reference_context(context)
+        if not chunks and not external_references:
             return self._insufficient_payload(
                 context=context,
                 warnings=["No project evidence matched the requested literature review topic."],
             )
 
-        review = _llm_grounded_answer(
-            (
-                "Create a bounded literature review structure using only the provided project evidence. "
-                "Prefer themes, gaps, and technical directions that can be justified from the evidence."
-            ),
-            f"Create a literature review structure for: {context.user_input}",
-            chunks,
-        )
+        if chunks:
+            review = _llm_grounded_answer(
+                (
+                    "Create a bounded literature review structure using only the provided project evidence. "
+                    "Prefer themes, gaps, and technical directions that can be justified from the evidence. "
+                    "Any external references included in the user prompt are metadata-only context and must be labeled as external references."
+                ),
+                (
+                    f"Create a literature review structure for: {context.user_input}\n\n"
+                    f"Saved external reference context (metadata only, not internal evidence):\n{external_context or 'None'}"
+                ),
+                chunks,
+            )
+        else:
+            review = (
+                "Current project evidence is insufficient for a grounded literature review answer. "
+                "Saved external references are listed below as metadata-only leads that require manual confirmation."
+            )
+
+        sections = [AgentResultSection(title="Review Structure", content=review)]
+        if external_references:
+            external_lines = []
+            for reference in external_references:
+                external_lines.append(
+                    f"- {reference.title} | {reference.source} | DOI: {reference.doi or 'Unavailable'} | URL: {reference.url or 'Unavailable'}"
+                )
+            sections.append(
+                AgentResultSection(
+                    title="External References",
+                    content="\n".join(external_lines),
+                )
+            )
+
+        warnings = [DEFAULT_MANUAL_CONFIRMATION_WARNING]
+        warnings.extend(external_warnings)
+        if external_references:
+            warnings.append("External references are metadata only and never replace uploaded-document evidence.")
         return AgentResultPayload(
             routed_task_type=context.routed_task_type,
             route_confidence=context.route_confidence,
             route_reason=context.route_reason,
             answer=review,
             result=review,
-            sections=[
-                AgentResultSection(title="Review Structure", content=review),
-            ],
+            sections=sections,
             document_scope=_dominant_documents(chunks, limit=3),
             sources=_dedupe_sources(chunks),
-            warnings=[DEFAULT_MANUAL_CONFIRMATION_WARNING],
+            external_references=external_references,
+            warnings=list(dict.fromkeys(warnings)),
         )
 
 

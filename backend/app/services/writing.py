@@ -13,6 +13,11 @@ from app.models.writing_artifact import WritingArtifact
 from app.schemas.chat import SourceReferenceResponse
 from app.schemas.writing import WritingArtifactResponse, WritingArtifactType
 from app.services.agent_framework import DEFAULT_MANUAL_CONFIRMATION_WARNING
+from app.services.external_references import (
+    build_external_reference_markdown,
+    build_external_reference_warning_summary,
+    list_saved_external_references,
+)
 from app.services.llm_gateway import LLMGatewayError, PromptChunk, get_llm_gateway
 from app.services.rag import INSUFFICIENT_INFORMATION_TEXT, RetrievedChunk, retrieve_project_chunks
 
@@ -66,6 +71,21 @@ class WritingSkillResult:
     sources: list[SourceReferenceResponse]
     warnings: list[str]
     unsupported_claims: list[str]
+
+
+def _external_reference_markdown_block(context: WritingContext, *, limit: int = 4) -> tuple[str | None, list[str]]:
+    references = list_saved_external_references(
+        context.db,
+        user_id=context.user_id,
+        project_id=context.project_id,
+        limit=limit,
+    )
+    if not references:
+        return None, []
+    block = "\n".join(build_external_reference_markdown(reference) for reference in references)
+    warnings = build_external_reference_warning_summary(references)
+    warnings.append("External references are metadata only and require manual confirmation before citation reuse.")
+    return block, list(dict.fromkeys(warnings))
 
 
 def _dedupe_sources(chunks: list[RetrievedChunk]) -> list[SourceReferenceResponse]:
@@ -324,18 +344,39 @@ class RelatedWorkDraftSkill(BaseWritingSkill):
     heading = "Related Work Draft"
 
     def execute(self, context: WritingContext) -> WritingSkillResult:
-        return self._default_result(
+        chunks = retrieve_project_chunks(
+            context.db,
+            user_id=context.user_id,
+            project_id=context.project_id,
+            question=context.query_text,
+        )
+        external_block, external_warnings = _external_reference_markdown_block(context)
+
+        if not chunks and not external_block:
+            return self._insufficient_result(context=context, title=f"{self.heading}: {context.topic}")
+
+        result = self._default_result(
             context=context,
             title=f"{self.heading}: {context.topic}",
-            chunks=retrieve_project_chunks(
-                context.db,
-                user_id=context.user_id,
-                project_id=context.project_id,
-                question=context.query_text,
-            ),
+            chunks=chunks,
             task_line="Generate a related-work draft that compares themes, methods, and limitations from current project evidence.",
             template_sections=["Theme Overview", "Method Comparison", "Limitations and Gaps", "Positioning"],
+            extra_warnings=external_warnings,
         )
+        if external_block:
+            result = WritingSkillResult(
+                title=result.title,
+                content_markdown=(
+                    f"{result.content_markdown}\n\n"
+                    "## External References (Metadata Only)\n"
+                    f"{external_block}\n\n"
+                    "These external references are metadata-only leads and do not replace uploaded-document evidence."
+                ),
+                sources=result.sources,
+                warnings=list(dict.fromkeys([*result.warnings, *external_warnings])),
+                unsupported_claims=result.unsupported_claims,
+            )
+        return result
 
 
 class MethodFrameworkSkill(BaseWritingSkill):
@@ -386,6 +427,7 @@ class CitationCheckSkill(BaseWritingSkill):
     def execute(self, context: WritingContext) -> WritingSkillResult:
         claims = _claim_candidates(context.requirements or context.topic)
         title = f"{self.heading}: {context.topic}"
+        external_block, external_warnings = _external_reference_markdown_block(context)
         if not claims:
             return WritingSkillResult(
                 title=title,
@@ -428,13 +470,16 @@ class CitationCheckSkill(BaseWritingSkill):
                 "\n".join(f"- {claim}" for claim in unsupported_claims) or "- None",
                 "## Evidence Notes",
                 _format_sources_markdown(sources),
+                "## External References (Metadata Only)" if external_block else "",
+                external_block or "",
             ]
         )
+        warnings.extend(external_warnings)
         return WritingSkillResult(
             title=title,
             content_markdown=content_markdown,
             sources=sources,
-            warnings=warnings,
+            warnings=list(dict.fromkeys(warnings)),
             unsupported_claims=unsupported_claims,
         )
 

@@ -63,6 +63,56 @@ export type SourceReference = {
   excerpt: string;
 };
 
+export type ExternalReference = {
+  id: string;
+  user_id: string;
+  project_id: string;
+  source: string;
+  title: string;
+  authors: string[];
+  year: number | null;
+  venue: string | null;
+  doi: string | null;
+  url: string | null;
+  abstract: string | null;
+  bibtex: string;
+  warnings: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type ExternalReferenceSearchCandidate = {
+  dedupe_key: string;
+  source: string;
+  title: string;
+  authors: string[];
+  year: number | null;
+  venue: string | null;
+  doi: string | null;
+  url: string | null;
+  abstract: string | null;
+  warnings: string[];
+};
+
+export type ExternalReferenceSearchResponse = {
+  results: ExternalReferenceSearchCandidate[];
+  warnings: string[];
+};
+
+export type ExternalReferenceContext = {
+  id: string;
+  label: "external reference";
+  source: string;
+  title: string;
+  authors: string[];
+  year: number | null;
+  venue: string | null;
+  doi: string | null;
+  url: string | null;
+  abstract: string | null;
+  warnings: string[];
+};
+
 export type ChatMessage = {
   id: string;
   user_id: string;
@@ -114,6 +164,7 @@ export type AgentResultPayload = {
   sections: AgentResultSection[];
   document_scope: string[];
   sources: SourceReference[];
+  external_references: ExternalReferenceContext[];
   warnings: string[];
   clarification: string | null;
   supported_claims: string[];

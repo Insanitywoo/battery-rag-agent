@@ -57,3 +57,10 @@ The system SHALL support exporting one writing artifact as Markdown, and the exp
 #### Scenario: Owner exports one Markdown artifact
 - **WHEN** an authenticated owner exports a writing artifact in a project they own
 - **THEN** the returned Markdown content SHALL correspond only to that artifact and SHALL not contain another user's data
+
+### Requirement: Writing assistant SHALL support bounded reuse of saved external references
+The writing assistant in this capability MAY reuse saved project-scoped `external_references` for related-work-oriented and citation-support-oriented writing flows, but it SHALL label them explicitly as external references and SHALL not treat them as uploaded-document evidence.
+
+#### Scenario: Related-work drafting uses saved external references safely
+- **WHEN** an authenticated owner generates a related-work-oriented or citation-support-oriented writing artifact
+- **THEN** the writing assistant MAY incorporate saved external references with explicit external labeling while preserving the distinction from internal project evidence

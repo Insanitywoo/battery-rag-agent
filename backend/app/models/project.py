@@ -30,3 +30,4 @@ class Project(Base):
     chat_messages = relationship("ChatMessage", back_populates="project", cascade="all, delete-orphan")
     agent_tasks = relationship("AgentTask", back_populates="project", cascade="all, delete-orphan")
     writing_artifacts = relationship("WritingArtifact", back_populates="project", cascade="all, delete-orphan")
+    external_references = relationship("ExternalReference", back_populates="project", cascade="all, delete-orphan")

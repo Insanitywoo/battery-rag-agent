@@ -3,6 +3,7 @@ from app.models.chat_message import ChatMessage
 from app.models.chat_session import ChatSession
 from app.models.document import Document
 from app.models.document_chunk import DocumentChunk
+from app.models.external_reference import ExternalReference
 from app.models.project import Project
 from app.models.user import User
 from app.models.writing_artifact import WritingArtifact
@@ -13,6 +14,7 @@ __all__ = [
     "ChatSession",
     "Document",
     "DocumentChunk",
+    "ExternalReference",
     "Project",
     "User",
     "WritingArtifact",

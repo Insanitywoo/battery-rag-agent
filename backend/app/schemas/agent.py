@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.chat import SourceReferenceResponse
+from app.schemas.external_reference import ExternalReferenceContextResponse
 
 
 AgentTaskType = Literal[
@@ -37,6 +38,7 @@ class AgentResultPayload(BaseModel):
     sections: list[AgentResultSection] = Field(default_factory=list)
     document_scope: list[str] = Field(default_factory=list)
     sources: list[SourceReferenceResponse] = Field(default_factory=list)
+    external_references: list[ExternalReferenceContextResponse] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     clarification: str | None = None
     supported_claims: list[str] = Field(default_factory=list)

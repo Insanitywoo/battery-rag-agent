@@ -12,6 +12,7 @@ import type {
   AgentTask,
   AgentTaskType,
   ApiMessage,
+  ExternalReferenceContext,
   ProjectDetail,
   SourceReference,
 } from "../../../../lib/types";
@@ -51,6 +52,35 @@ function SourceList({ sources }: { sources: SourceReference[] }) {
             {` | Chunk ${source.chunk_index}`}
           </p>
           <p className="mt-2 text-sm leading-7 text-slate-600">{source.excerpt}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ExternalReferenceList({ references }: { references: ExternalReferenceContext[] }) {
+  if (references.length === 0) {
+    return <p className="text-sm text-slate-500">No saved external references were attached to this result.</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {references.map((reference) => (
+        <div key={reference.id} className="rounded-2xl border border-slate-200 bg-mist p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            External reference | {reference.source}
+            {reference.year ? ` | ${reference.year}` : ""}
+          </p>
+          <p className="mt-2 text-sm font-semibold text-ink">{reference.title}</p>
+          <p className="mt-2 text-sm leading-7 text-slate-600">
+            {reference.authors.length > 0 ? reference.authors.join(", ") : "Unknown authors"}
+          </p>
+          <p className="mt-2 text-sm leading-7 text-slate-600">
+            DOI: {reference.doi || "Unavailable"}
+          </p>
+          <p className="mt-1 break-all text-sm leading-7 text-slate-600">
+            URL: {reference.url || "Unavailable"}
+          </p>
         </div>
       ))}
     </div>
@@ -140,6 +170,13 @@ function ResultPanel({ result }: { result: AgentResultPayload }) {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Sources</p>
         <div className="mt-4">
           <SourceList sources={result.sources} />
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-slate-200 bg-white p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">External references</p>
+        <div className="mt-4">
+          <ExternalReferenceList references={result.external_references} />
         </div>
       </div>
     </div>
@@ -264,7 +301,8 @@ export default function ProjectAgentPage() {
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
               Run one bounded research task at a time against the current project knowledge base.
-              The backend routes the request, executes one Skill, and returns structured results with evidence.
+              The backend routes the request, executes one Skill, and returns structured results with evidence
+              plus clearly labeled external references when literature workflows reuse saved metadata.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -279,6 +317,12 @@ export default function ProjectAgentPage() {
               className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
             >
               Open chat
+            </Link>
+            <Link
+              href={`/projects/${projectId}/external-references`}
+              className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            >
+              Open external references
             </Link>
             <LogoutButton onLogout={logout} />
           </div>

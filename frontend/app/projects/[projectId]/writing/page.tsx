@@ -381,7 +381,8 @@ export default function ProjectPaperWritingPage() {
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
               Generate evidence-first writing artifacts from the current project knowledge base.
-              The system saves markdown drafts, source references, and unsupported claims for later review.
+              The system saves markdown drafts, source references, unsupported claims, and clearly labeled
+              external-reference notes for later review.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -396,6 +397,12 @@ export default function ProjectPaperWritingPage() {
               className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
             >
               Open agent
+            </Link>
+            <Link
+              href={`/projects/${projectId}/external-references`}
+              className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            >
+              Open external references
             </Link>
             <LogoutButton onLogout={logout} />
           </div>
