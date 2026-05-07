@@ -46,6 +46,8 @@ def init_db() -> None:
         chat_session,
         document,
         document_chunk,
+        experiment_dataset,
+        experiment_output,
         external_reference,
         project,
         user,

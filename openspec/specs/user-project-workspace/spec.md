@@ -58,3 +58,10 @@ Every project API introduced in this change SHALL validate the current authentic
 #### Scenario: Cross-user project access is blocked
 - **WHEN** a client attempts to access another user's project by identifier
 - **THEN** the system SHALL reject the request and SHALL NOT expose project data
+
+### Requirement: Project detail scope SHALL remain limited to bounded project experiment tools in this capability
+The project detail capability introduced in this capability SHALL expand from project metadata plus chat, Agent, Paper Writing, and External References entry structure into owner-scoped project metadata plus an Experiment Analysis entry structure, and MUST NOT introduce unrestricted compute pipelines or broader autonomous workflows.
+
+#### Scenario: Project Experiment Analysis route remains project-scoped and owner-scoped
+- **WHEN** an authenticated owner enters the Experiment Analysis page from project detail
+- **THEN** the resulting experiment-analysis experience SHALL remain scoped to that owner's current project, current experiment datasets, current saved outputs, and current export actions only

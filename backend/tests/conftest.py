@@ -29,6 +29,8 @@ def app(tmp_path: Path):
     os.environ["CHUNK_SIZE"] = "40"
     os.environ["CHUNK_OVERLAP"] = "10"
     os.environ["CSV_PREVIEW_CHAR_LIMIT"] = "120"
+    os.environ["EXPERIMENT_PREVIEW_ROWS"] = "4"
+    os.environ["EXPERIMENT_CHART_POINT_LIMIT"] = "20"
     os.environ["QDRANT_URL"] = "memory://local"
     os.environ["QDRANT_COLLECTION_NAME"] = f"test-{tmp_path.name}"
     os.environ["LLM_PROVIDER"] = "mock"

@@ -33,3 +33,10 @@ The backend shell MUST NOT implement external web search beyond bounded scholarl
 #### Scenario: Backend scope is limited to internal research workflows plus bounded external metadata tools
 - **WHEN** the backend shell is reviewed for accepted functionality in this change
 - **THEN** the functional expansion beyond health check SHALL be limited to authentication, owner-scoped workspace and document APIs, retrieval and chat, bounded Agent and writing assistance, and bounded external scholarly metadata plus BibTeX APIs, and SHALL exclude external full-text scraping, copyright bypass, experiment analysis, and complex autonomous planning
+
+### Requirement: Backend shell SHALL support bounded experiment-analysis APIs without enabling arbitrary code execution
+The backend shell MUST NOT implement arbitrary Python execution, user-defined experiment scripts, simulation systems, hardware control, complex machine-learning modeling, billing logic, or other out-of-scope business workflows in this capability, but it MAY implement bounded CSV experiment-analysis plus controlled chart APIs introduced by this capability.
+
+#### Scenario: Backend scope is limited to bounded research workflows plus experiment-analysis tools
+- **WHEN** the backend shell is reviewed for accepted functionality in this capability
+- **THEN** the functional expansion beyond health check SHALL be limited to authentication, owner-scoped workspace and document APIs, retrieval and chat, bounded Agent and writing assistance, bounded external scholarly metadata plus BibTeX APIs, and bounded CSV experiment-analysis plus controlled chart APIs, and SHALL exclude arbitrary script execution, simulation, device control, and complex autonomous planning

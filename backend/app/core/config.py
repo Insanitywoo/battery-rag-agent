@@ -70,6 +70,8 @@ class Settings:
     chunk_size: int
     chunk_overlap: int
     csv_preview_char_limit: int
+    experiment_preview_rows: int
+    experiment_chart_point_limit: int
     qdrant_url: str
     qdrant_api_key: str | None
     qdrant_collection_name: str
@@ -124,6 +126,8 @@ def get_settings() -> Settings:
         chunk_size=_get_int("CHUNK_SIZE", 1000),
         chunk_overlap=_get_int("CHUNK_OVERLAP", 150),
         csv_preview_char_limit=_get_int("CSV_PREVIEW_CHAR_LIMIT", 5000),
+        experiment_preview_rows=max(1, _get_int("EXPERIMENT_PREVIEW_ROWS", 20)),
+        experiment_chart_point_limit=max(5, _get_int("EXPERIMENT_CHART_POINT_LIMIT", 60)),
         qdrant_url=os.getenv("QDRANT_URL", "http://127.0.0.1:6333"),
         qdrant_api_key=os.getenv("QDRANT_API_KEY"),
         qdrant_collection_name=os.getenv("QDRANT_COLLECTION_NAME", "battery_rag_chunks"),

@@ -31,3 +31,5 @@ class User(Base):
     agent_tasks = relationship("AgentTask", back_populates="user", cascade="all, delete-orphan")
     writing_artifacts = relationship("WritingArtifact", back_populates="user", cascade="all, delete-orphan")
     external_references = relationship("ExternalReference", back_populates="user", cascade="all, delete-orphan")
+    experiment_datasets = relationship("ExperimentDataset", back_populates="user", cascade="all, delete-orphan")
+    experiment_outputs = relationship("ExperimentOutput", back_populates="user", cascade="all, delete-orphan")

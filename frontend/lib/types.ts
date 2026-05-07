@@ -205,3 +205,52 @@ export type WritingArtifact = {
   created_at: string;
   updated_at: string;
 };
+
+export type ExperimentColumnType = "numeric" | "categorical" | "text" | "empty";
+
+export type ExperimentDatasetColumn = {
+  name: string;
+  inferred_type: ExperimentColumnType;
+};
+
+export type ExperimentDataset = {
+  id: string;
+  user_id: string;
+  project_id: string;
+  filename: string;
+  original_filename: string;
+  file_size: number;
+  storage_path: string;
+  columns: ExperimentDatasetColumn[];
+  row_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ExperimentDatasetDetail = ExperimentDataset & {
+  preview_rows: Array<Record<string, string | null>>;
+};
+
+export type ExperimentStatsMetric = {
+  count: number;
+  mean: number;
+  min: number;
+  max: number;
+  std: number;
+};
+
+export type ExperimentOutputType = "stats_summary" | "line_chart" | "bar_chart" | "result_analysis";
+
+export type ExperimentOutput = {
+  id: string;
+  user_id: string;
+  project_id: string;
+  dataset_id: string;
+  output_type: ExperimentOutputType;
+  title: string;
+  content_markdown: string | null;
+  chart_path: string | null;
+  stats_json: Record<string, ExperimentStatsMetric> | null;
+  created_at: string;
+  updated_at: string;
+};

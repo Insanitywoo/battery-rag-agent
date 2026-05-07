@@ -461,6 +461,12 @@ export default function ProjectDetailPage() {
               >
                 Open external references
               </Link>
+              <Link
+                href={`/projects/${project.id}/experiment-analysis`}
+                className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                Open experiment analysis
+              </Link>
             </div>
 
             <p className="mt-4 text-xs leading-6 text-slate-500">
@@ -542,6 +548,10 @@ export default function ProjectDetailPage() {
               <p>
                 External references stay as separately saved metadata records and are never auto-ingested
                 into chunks, embeddings, or the vector knowledge base.
+              </p>
+              <p>
+                Experiment Analysis uses dedicated CSV datasets and backend-controlled SVG charts, so no
+                user-uploaded code is ever executed during stats, chart, or export flows.
               </p>
             </div>
           </article>

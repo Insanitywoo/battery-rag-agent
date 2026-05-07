@@ -37,6 +37,7 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Curated `external_references` persistence with owner and project lineage
 - Draft BibTeX export for saved external references
 - Bounded Agent and writing reuse of saved external references under explicit `external reference` labeling
+- Project-scoped experiment CSV upload, preview, descriptive statistics, controlled SVG charts, bounded experiment analysis, and Markdown or LaTeX fragment export
 
 ## Still Out of Scope
 
@@ -46,6 +47,7 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Third-party login, email verification, password reset, billing, and payments
 - Semantic Scholar integration, web-scale crawling, PDF download, and full-text scraping
 - Complex multi-step autonomous ReAct workflows
+- Arbitrary Python execution, notebook-style analysis, simulation, device control, or full PDF or Word experiment-report export
 
 ## Local Development Model
 
@@ -58,6 +60,7 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Model keys stay on the backend only.
 - External provider calls use only explicit user-entered keyword, title, or DOI input from the External References workspace.
 - Saved external references remain separate from uploaded-document chunks, embeddings, and vector knowledge-base state.
+- Experiment datasets stay separate from uploaded literature documents and use backend-controlled chart generation only.
 
 ## Environment Variables
 
@@ -79,6 +82,8 @@ Important settings:
 - `EXTERNAL_TOOL_USER_AGENT` sets the backend-only outbound user-agent header for external metadata providers.
 - `EXTERNAL_SEARCH_TIMEOUT_SECONDS` bounds provider request time.
 - `CROSSREF_MAILTO` is optional but recommended when using Crossref heavily.
+- `EXPERIMENT_PREVIEW_ROWS` bounds the preview table returned by experiment dataset detail APIs.
+- `EXPERIMENT_CHART_POINT_LIMIT` bounds how many rows may be rendered into one experiment chart.
 
 ## Local Startup
 
@@ -129,6 +134,8 @@ Important settings:
 14. Generate a writing artifact, confirm saved sources and unsupported claims, then export it as Markdown.
 15. Open `/projects/:projectId/external-references`.
 16. Search by keyword, title, or DOI, save one curated result, then export the project BibTeX draft.
+17. Open `/projects/:projectId/experiment-analysis`.
+18. Upload a CSV dataset, inspect preview rows, generate a stats summary, generate a line or bar chart, then save an experiment analysis output and export it as Markdown or LaTeX.
 
 ## Notes on RAG Chat
 
@@ -155,6 +162,14 @@ Important settings:
 - The assistant is evidence-first: unsupported conclusions are flagged for manual confirmation instead of being presented as grounded facts.
 - Related-work and citation-support flows may append saved external reference notes, but those remain metadata-only and require manual confirmation.
 - The writing assistant does not implement Semantic Scholar, LaTeX/Word/PDF export, experiment analysis, external tools beyond Crossref/arXiv metadata, or full-paper ghostwriting.
+## Notes on Experiment Analysis
+
+- Experiment Analysis uses dedicated `experiment_datasets` and `experiment_outputs` records scoped by `user_id` and `project_id`.
+- CSV parsing is bounded and schema-first: the backend stores parsed column metadata plus row count and returns only a bounded preview subset.
+- Descriptive statistics are limited to `count`, `mean`, `min`, `max`, and `std` for numeric columns.
+- Charts are backend-generated SVG files only. The system never executes uploaded code, formulas, notebooks, or scripts.
+- The Experiment Analysis Skill produces bounded Results-style text from CSV-derived facts, statistics, chart metadata, and explicit user framing only.
+- Markdown and LaTeX export endpoints return partial artifacts only, suitable for later manual editing rather than full report compilation.
 
 ## Notes on External References
 
@@ -169,4 +184,4 @@ Important settings:
 
 Product source of truth lives under `openspec/specs/`.
 
-The active implementation change in this repository is currently `change-008-external-research-tools`.
+The active implementation change in this repository is currently `change-009-experiment-analysis-and-export`.
