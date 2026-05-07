@@ -41,6 +41,7 @@ def set_auth_cookie(response: Response, access_token: str) -> None:
         httponly=True,
         secure=settings.cookie_secure,
         samesite=settings.cookie_samesite,
+        domain=settings.cookie_domain,
         max_age=settings.access_token_ttl_minutes * 60,
         path="/",
     )
@@ -53,5 +54,6 @@ def clear_auth_cookie(response: Response) -> None:
         httponly=True,
         secure=settings.cookie_secure,
         samesite=settings.cookie_samesite,
+        domain=settings.cookie_domain,
         path="/",
     )

@@ -1,6 +1,6 @@
 # Battery-RAG Agent
 
-Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, control engineering, and AI research workflows. The current repository includes the project bootstrap, authentication and owner-scoped workspace, project document upload and ingestion, project-level vector knowledge-base build, streaming RAG chat, a bounded Agent plus Skills framework for project-scoped research tasks, an evidence-first paper writing assistant, and a bounded external-references workspace for Crossref/arXiv metadata plus draft BibTeX export.
+Battery-RAG Agent is an online research assistant platform for lithium-ion battery, energy storage, control engineering, and AI research workflows. The current repository includes the project bootstrap, authentication and owner-scoped workspace, project document upload and ingestion, project-level vector knowledge-base build, streaming RAG chat, a bounded Agent plus Skills framework for project-scoped research tasks, an evidence-first paper writing assistant, a bounded external-references workspace for Crossref/arXiv metadata plus draft BibTeX export, a bounded experiment-analysis workspace, and a public-beta deployment baseline.
 
 ## Repository Structure
 
@@ -9,8 +9,13 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 |- frontend/          # Next.js + React + Tailwind CSS web app
 |- backend/           # FastAPI API service
 |- openspec/          # Product source of truth and change history
+|- nginx/             # Public-beta reverse-proxy config
+|- docs/              # Deployment and operations guides
+|- scripts/           # Helper scripts such as public-beta deployment
 |- docker-compose.yml
+|- docker-compose.prod.yml
 |- .env.example
+|- .env.production.example
 `- README.md
 ```
 
@@ -38,6 +43,7 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Draft BibTeX export for saved external references
 - Bounded Agent and writing reuse of saved external references under explicit `external reference` labeling
 - Project-scoped experiment CSV upload, preview, descriptive statistics, controlled SVG charts, bounded experiment analysis, and Markdown or LaTeX fragment export
+- Public-beta deployment assets including production Dockerfiles, Nginx proxy config, production compose topology, persistent volume guidance, deployment script, and deployment documentation
 
 ## Still Out of Scope
 
@@ -62,14 +68,27 @@ Battery-RAG Agent is an online research assistant platform for lithium-ion batte
 - Saved external references remain separate from uploaded-document chunks, embeddings, and vector knowledge-base state.
 - Experiment datasets stay separate from uploaded literature documents and use backend-controlled chart generation only.
 
+## Production Deployment Model
+
+- `docker-compose.prod.yml` defines a bounded single-node public-beta deployment topology.
+- Nginx is the public entry point for frontend traffic and `/api/` proxying.
+- Backend, frontend, PostgreSQL, Redis, and Qdrant run as separate containers.
+- User-uploaded files and generated outputs persist under the backend storage volume mounted at `/app/storage`.
+- Production secrets stay in `.env.production`, not in tracked repository files.
+- Production auth should keep HttpOnly cookies, `COOKIE_SECURE=true`, explicit `COOKIE_DOMAIN`, and restricted `BACKEND_CORS_ORIGINS`.
+- Public-beta deployment guidance lives in [docs/deployment-public-beta.md](/D:/projects/battery_rag_agent/docs/deployment-public-beta.md).
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and adjust values as needed.
+
+For public-beta deployment, copy `.env.production.example` to `.env.production` and use it with `docker-compose.prod.yml`.
 
 Important settings:
 
 - `JWT_SECRET` is required.
 - `COOKIE_SECURE=false` is appropriate for local HTTP development.
+- `COOKIE_DOMAIN` may be left blank locally and should be set explicitly in public deployment.
 - `DATABASE_URL` may be left empty to derive from the PostgreSQL compose settings.
 - `STORAGE_ROOT` defaults to `storage`.
 - `QDRANT_URL` defaults to `http://127.0.0.1:6333`.
@@ -115,6 +134,24 @@ Important settings:
    - Frontend: `http://localhost:3000`
    - Backend health check: `http://localhost:8000/api/health`
    - Backend docs: `http://localhost:8000/docs`
+
+## Public Beta Startup
+
+1. Copy `.env.production.example` to `.env.production`.
+2. Replace placeholder secrets and domain settings before first boot.
+3. Start the public-beta stack:
+
+   ```bash
+   ./scripts/deploy-prod.sh
+   ```
+
+4. Verify:
+
+   - Public frontend through Nginx on your published host
+   - Backend health check at `/api/health`
+   - Container status with `docker compose --env-file .env.production -f docker-compose.prod.yml ps`
+
+5. Read the full deployment guide at [docs/deployment-public-beta.md](/D:/projects/battery_rag_agent/docs/deployment-public-beta.md).
 
 ## Suggested Manual Validation Flow
 
@@ -171,6 +208,15 @@ Important settings:
 - The Experiment Analysis Skill produces bounded Results-style text from CSV-derived facts, statistics, chart metadata, and explicit user framing only.
 - Markdown and LaTeX export endpoints return partial artifacts only, suitable for later manual editing rather than full report compilation.
 
+## Notes on Public Beta Deployment
+
+- The public-beta deployment shape is intentionally single-node and Docker Compose based.
+- It does not include Kubernetes, CI/CD automation, multi-node scaling, S3 or OSS migration, Prometheus, Grafana, or billing systems.
+- Nginx does not expose storage, uploads, or outputs as static browsable directories.
+- Uploaded files remain treated as untrusted data and are not directly executed.
+- Docker service logs use bounded `json-file` rotation settings as a simple public-beta default.
+- HTTPS is strongly recommended before exposing login flows to external users.
+
 ## Notes on External References
 
 - External search is authenticated, owner-scoped, and project-scoped.
@@ -184,4 +230,4 @@ Important settings:
 
 Product source of truth lives under `openspec/specs/`.
 
-The active implementation change in this repository is currently `change-009-experiment-analysis-and-export`.
+The active implementation change in this repository is currently `change-010-deployment-public-beta`.

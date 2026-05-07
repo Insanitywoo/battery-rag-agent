@@ -16,9 +16,16 @@ backend/**/*.pyc
 
 # Environment
 .env
+.env.production
+.env.production.local
 frontend/.env.local
+frontend/.env.production
 backend/.env
+backend/.env.production
 storage/
+uploads/
+outputs/
+deploy-data/
 
 # OS / editor
 .DS_Store

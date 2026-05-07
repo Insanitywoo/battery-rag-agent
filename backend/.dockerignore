@@ -1,0 +1,12 @@
+.venv
+__pycache__
+.pytest_cache
+.pytest_tmp
+.pytest_*
+pytest-cache-files-*
+.mypy_cache
+.startup-check.*
+*.pyc
+.env
+.env.production
+tests
